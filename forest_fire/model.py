@@ -20,8 +20,9 @@ class ForestFire(mesa.Model):
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 "Fine": lambda model: self.count_type(model, "Fine"),
-                "On Fire": lambda model: self.count_type(model, "Burning"),
+                "Burning": lambda model: self.count_type(model, "Burning"),
                 "Burned": lambda model: self.count_type(model, "Burned"),
+                "CO2": lambda model: self.count_CO2(model)
             }
         )
 
@@ -53,3 +54,13 @@ class ForestFire(mesa.Model):
             if tree.status == status:
                 count += 1
         return count
+
+    @staticmethod
+    def count_CO2(model):
+        CO_emission_total = 0
+        for tree in model.schedule.agents:
+            CO_emission_total += tree.CO_emission
+        print(CO_emission_total)
+        return CO_emission_total
+
+

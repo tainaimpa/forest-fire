@@ -11,6 +11,7 @@ COLORS = {
     "Fine": "#00AA00",
     "Burning": "#FF0000",
     "Burned": "#3D2B1F",
+    'CO2':"#0000FF",
 }
 
 
