@@ -1,16 +1,20 @@
 import mesa
+from typing import Literal
 
 from forest_fire.tree import Tree
+from forest_fire.biome import biomes
 
 
 class ForestFire(mesa.Model):
     def __init__(
         self,
+        biome_name: Literal["Cerrado"], # TODO: Adicionar opção de outros biomas implementados
         width=100,
         height=100,
         tree_density=0.65,
     ):
         super().__init__()
+        self.biome = biomes[biome_name]
         self.width = width
         self.height = height
         self.tree_density = tree_density
@@ -20,7 +24,7 @@ class ForestFire(mesa.Model):
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 "Fine": lambda model: self.count_type(model, "Fine"),
-                "On Fire": lambda model: self.count_type(model, "Burning"),
+                "Burning": lambda model: self.count_type(model, "Burning"),
                 "Burned": lambda model: self.count_type(model, "Burned"),
             }
         )
@@ -31,7 +35,9 @@ class ForestFire(mesa.Model):
 
     def _initialize_trees(self):
         for _contents, pos in self.grid.coord_iter():
-            tree = Tree(self.next_id(), self, pos)
+            size = self.biome.fauna_size.sort_value()
+            color = self.biome.fauna_color
+            tree = Tree(self.next_id(), self, pos, size, color)
             if self.random.random() < self.tree_density:
                 if pos[0] == 0:  # set first column to Burning
                     tree.status = "Burning"

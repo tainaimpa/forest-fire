@@ -8,7 +8,6 @@ CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 500
 
 COLORS = {
-    "Fine": "#00AA00",
     "Burning": "#FF0000",
     "Burned": "#3D2B1F",
 }
@@ -27,7 +26,7 @@ def tree_portrayal(tree):
         "Layer": 0,
         "x": x,
         "y": y,
-        "Color": COLORS[tree.status],
+        "Color": tree.color if tree.status == "Fine" else COLORS[tree.status],
     }
 
 
@@ -44,6 +43,7 @@ pie_chart = mesa.visualization.PieChartModule(
 )
 
 model_params = {
+    "biome_name": mesa.visualization.Choice("Biome", "Cerrado", ["Cerrado"]), # TODO: Adicionar opção de outros biomas implementados
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
