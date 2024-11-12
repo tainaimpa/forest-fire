@@ -24,10 +24,16 @@ class Biome():
         self.humidity = humidity
         self.temperature = temperature
         self.fauna_size = fauna_size
-        self.fauna_color = fauna_color # TODO: Implementar variação de cor
-
+        self.fauna_color = fauna_color 
+        
 cerrado = Biome(0.5, 10, 25, Stats(6, 2.5), "#67B921")
+amazonia = Biome(0.9, 30, 27, Stats(8, 3), "#009933")  
+caatinga = Biome(0.2, 3, 30, Stats(4, 2), "#cccc00")  
+pantanal = Biome(0.3, 35, 28, Stats(7, 3), "#339966")
 
 biomes = {
-    "Cerrado": cerrado
+    "Cerrado": cerrado,
+    "Amazônia": amazonia,
+    "Caatinga": caatinga,
+    "Pantanal": pantanal
 }

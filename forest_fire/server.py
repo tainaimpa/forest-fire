@@ -43,7 +43,7 @@ pie_chart = mesa.visualization.PieChartModule(
 )
 
 model_params = {
-    "biome_name": mesa.visualization.Choice("Biome", "Cerrado", ["Cerrado"]), # TODO: Adicionar opção de outros biomas implementados
+    "biome_name": mesa.visualization.Choice("Biome", "Cerrado", ["Cerrado","Amazônia","Caatinga","Pantanal"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
