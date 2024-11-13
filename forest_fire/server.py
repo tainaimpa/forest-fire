@@ -18,6 +18,7 @@ def tree_portrayal(tree):
         return
 
     (x, y) = tree.pos
+    color = COLORS.get(tree.status, "#FFFFFF")  # Cor padrão branca se status não for encontrado
     return {
         "Shape": "rect",
         "w": 1,
@@ -26,7 +27,7 @@ def tree_portrayal(tree):
         "Layer": 0,
         "x": x,
         "y": y,
-        "Color": tree.color if tree.status == "Fine" else COLORS[tree.status],
+        "Color": color,
     }
 
 
