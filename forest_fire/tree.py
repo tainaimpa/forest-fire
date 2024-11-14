@@ -1,5 +1,12 @@
 import mesa
 
+class terra(mesa.Agent):
+    def __init__(self, pos, model):
+
+        super().__init__(pos, model)
+        self.pos = pos
+ 
+
 
 class Tree(mesa.Agent):
     def __init__(self, unique_id, model, pos, size: float, color: str):
@@ -21,19 +28,17 @@ class Tree(mesa.Agent):
         Retorna a imagem associada com base no tamanho da árvore.
         """
         if self.size <= 3:
-            image_path = "forest_fire/images/arvore1.png"
-            #image_path = "./images/arvore1.png"  # Imagem para árvores bem pequenas
+            image_path = "forest_fire/images/arvore11.png" # Imagem para árvores bem pequenas
         elif self.size <= 5:
-            image_path = "forest_fire/images/arvore2.png"
-            #image_path = "./images/arvore2.png"  # Imagem para árvores pequenas
+            image_path = "forest_fire/images/arvore22.png" # Imagem para árvores pequenas  
         elif self.size <= 7:
-            image_path = "forest_fire/images/arvore3.png"
-            #image_path = "./images/arvore3.png"  # Imagem para árvores médias
+            image_path = "forest_fire/images/arvore33.png" # Imagem para árvores média
         elif self.size <= 9:
-            image_path = "forest_fire/images/arvore4.png"
-            #image_path = "./images/arvore4.png"  # Imagem para árvores grandes
+            image_path = "forest_fire/images/arvore44.png" # Imagem para árvores grandes 
         else:
-            image_path = "forest_fire/images/arvore5.png"
-            #image_path = "./images/arvore5.png"  # Imagem para árvores bem grandes
+            image_path = "forest_fire/images/arvore55.png" # Imagem para árvores bem grandes         
 
         return image_path
+    
+
+

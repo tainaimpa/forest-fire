@@ -1,18 +1,19 @@
 import mesa
 from typing import Literal
-from forest_fire.tree import Tree
+from forest_fire.tree import Tree, terra
 from forest_fire.biome import biomes
 
 class ForestFire(mesa.Model):
     def __init__(
         self,
-        
+        width = 70,
+        height = 70,
         tree_density=0.65,
     ):
         super().__init__()
 
         # Recupera o bioma escolhido
-        self.biome = biomes[biome_name]
+        self.biome = biomes["Cerrado"]
         self.width = width
         self.height = height
         self.tree_density = tree_density
@@ -21,7 +22,7 @@ class ForestFire(mesa.Model):
         self.schedule = mesa.time.RandomActivation(self)
         
         # Cria o grid de árvores
-        self.grid = mesa.space.SingleGrid(self.width, self.height, torus=False)
+        self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
 
         # Inicializa o coletor de dados
         self.datacollector = mesa.DataCollector(
@@ -31,6 +32,9 @@ class ForestFire(mesa.Model):
                 "Burned": lambda model: self.count_type(model, "Burned"),
             }
         )
+        for contents, (x,y) in self.grid.coord_iter():
+            n = terra( (x,y), self)
+            self.grid.place_agent(n, (x,y))
 
         self._initialize_trees()
 
@@ -48,6 +52,8 @@ class ForestFire(mesa.Model):
 
             # Determina se a árvore vai ser plantada com fogo ou não
             if self.random.random() < self.tree_density:
+                self.schedule.add(tree)
+                self.grid.place_agent(tree, pos)
                 if pos[0] == 0:  # Coloca fogo nas árvores da primeira linha
                     tree.status = "Burning"
                 else:
@@ -55,8 +61,7 @@ class ForestFire(mesa.Model):
             else:
                 tree.status = "Burned"  # Algumas árvores começam como "Burned"
             
-            self.schedule.add(tree)
-            self.grid.place_agent(tree, pos)
+
 
     def step(self):
         """
