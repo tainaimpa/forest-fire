@@ -4,8 +4,8 @@ from forest_fire.tree import Tree, terra
 from forest_fire.model import ForestFire
 
 # Ajuste do tamanho do grid e da tela
-GRID_WIDTH = 50
-GRID_HEIGHT = 50        
+GRID_WIDTH = 10
+GRID_HEIGHT = 10        
 CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 500
 
@@ -50,9 +50,14 @@ def tree_portrayal(agent):
             portrayal["Layer"] = 0
   
         else:
-            semborda = "forest_fire/images/transparente.png"
-            #portrayal["Color"] = "#E3966B"  # Cor padrão da terra
-            portrayal["Shape"] = semborda  # A árvore será representada como um quadrado (ou outra forma, dependendo da imagem)
+            """
+            Acrescentar: Mudança da terra de acordo com o bioma.
+            Substituir pela imagem transparente (para que a terra mude de acordo com a influência das
+            células vizinhas, com condições: se 5 células vizinhas terem árvores queimadas então a terra
+            recebe no layer 0 a cor da árvore - simulando que o fogo se alastra pela terra visualmente). 
+            """
+            sem_arvore = "forest_fire/images/cerrado/terra.png"
+            portrayal["Shape"] = sem_arvore  # imagem da terra no bioma selecionado
             portrayal["Filled"] = "true"
             portrayal["Layer"] = 0
 
@@ -67,6 +72,7 @@ def tree_portrayal(agent):
         image = agent.get_image()  # Caminho da imagem da árvore
         portrayal["Color"] = COLORS.get(agent.status, "#E3966B")  # Cor da árvore com base no status
         portrayal["Shape"] = image  # A árvore será representada como um quadrado (ou outra forma, dependendo da imagem)
+        portrayal["Scale"] = 1.1
         portrayal["Filled"] = "true"
         portrayal["Layer"] = 1
         portrayal["w"] = 1  # Largura da célula no grid (pode ser ajustada)
