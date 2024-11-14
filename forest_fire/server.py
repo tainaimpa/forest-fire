@@ -44,19 +44,24 @@ def tree_portrayal(agent):
 
         # Se houver uma árvore sobre a terra, a cor da terra será a cor da árvore
         if tree_in_cell:
-            portrayal["Color"] = COLORS.get(tree_in_cell.status, "#E3966B")  # Cor da árvore
+            portrayal["Color"] = COLORS.get(tree_in_cell.status, "#E3966B")  # Cor da árvore 
+            portrayal["Shape"] = "rect"
+            portrayal["Filled"] = "true"
+            portrayal["Layer"] = 0
+  
         else:
-            portrayal["Color"] = "#E3966B"  # Cor padrão da terra
+            semborda = "forest_fire/images/transparente.png"
+            #portrayal["Color"] = "#E3966B"  # Cor padrão da terra
+            portrayal["Shape"] = semborda  # A árvore será representada como um quadrado (ou outra forma, dependendo da imagem)
+            portrayal["Filled"] = "true"
+            portrayal["Layer"] = 0
 
-        portrayal["Shape"] = "rect"
-        portrayal["Filled"] = "true"
-        portrayal["Layer"] = 0
         portrayal["w"] = 1  # Largura da célula no grid
         portrayal["h"] = 1  # Altura da célula no grid
         portrayal["x"] = x
         portrayal["y"] = y
-        portrayal["Stroke"] = "none"  # Não está removendo o contorno branco. ARRUMAR!
            
+
     # Se o agente for uma árvore
     elif isinstance(agent, Tree):
         image = agent.get_image()  # Caminho da imagem da árvore
