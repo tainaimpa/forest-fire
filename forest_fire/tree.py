@@ -1,7 +1,8 @@
-from mesa import Agent
+import mesa
+import random
 
 
-class Tree(Agent):
+class Tree(mesa.Agent):
     def __init__(self, unique_id, model, pos):
         super().__init__(unique_id, model)
         self.pos = pos
@@ -14,22 +15,3 @@ class Tree(Agent):
                 if neighbor.status == "Fine" and neighbor.burnable:
                     neighbor.status = "Burning"
             self.status = "Burned"
-
-
-class Obstacle(Tree):
-    def __init__(self, unique_id, model, pos):
-        super().__init__(unique_id, model, pos)
-        self.burnable = False
-        self.status = "Obstacle"
-
-class Lake(Tree):
-    def __init__(self, unique_id, model, pos):
-        super().__init__(unique_id, model, pos)
-        self.burnable = False
-
-class Corridor(Tree):
-    def __init__(self, unique_id, model, pos):
-        super().__init__(unique_id, model, pos)
-        self.burnable = True
-        self.spread_rate = 2.0
-        self.status = "Corridor"
