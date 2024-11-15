@@ -8,19 +8,20 @@ from forest_fire.biome import biomes
 class ForestFire(mesa.Model):
     def __init__(
         self,
-        biome_name: Literal["Cerrado"], # TODO: Adicionar opção de outros biomas implementados
+        biome_name: Literal["Default"], 
         width=100,
         height=100,
-        tree_density=0.65,
+        tree_density=0,
+        rainy_season=False
     ):
         super().__init__()
         self.biome = biomes[biome_name]
         self.width = width
         self.height = height
-        self.tree_density = tree_density
+        self.tree_density = self.biome.density if tree_density == 0 else tree_density
         self.schedule = mesa.time.RandomActivation(self)
-        self.grid = mesa.space.SingleGrid(self.width, self.height, torus=False)
-
+        self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
+        self.rainy_season = rainy_season
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 "Fine": lambda model: self.count_type(model, "Fine"),
@@ -35,8 +36,8 @@ class ForestFire(mesa.Model):
 
     def _initialize_trees(self):
         for _contents, pos in self.grid.coord_iter():
-            size = self.biome.fauna_size.sort_value()
-            color = self.biome.fauna_color
+            size = self.biome.size.sort_value()
+            color = self.biome.color
             tree = Tree(self.next_id(), self, pos, size, color)
             if self.random.random() < self.tree_density:
                 if pos[0] == 0:  # set first column to Burning

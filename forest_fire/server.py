@@ -8,6 +8,7 @@ CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 500
 
 COLORS = {
+    "Fine": "#00AA00",
     "Burning": "#FF0000",
     "Burned": "#3D2B1F",
 }
@@ -43,10 +44,11 @@ pie_chart = mesa.visualization.PieChartModule(
 )
 
 model_params = {
-    "biome_name": mesa.visualization.Choice("Biome", "Cerrado", ["Cerrado","Amazônia","Caatinga","Pantanal"]), 
+    "rainy_season": mesa.visualization.Checkbox("Estação chuvosa", False),
+    "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
-    "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
+    "tree_density": mesa.visualization.Slider("Tree Density", 0.0, 0.0, 1.0, 0.01),
 }
 
 server = mesa.visualization.ModularServer(
