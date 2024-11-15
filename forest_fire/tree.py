@@ -11,6 +11,6 @@ class Tree(mesa.Agent):
     def step(self):
         if self.status == "Burning":
             for neighbor in self.model.grid.iter_neighbors(self.pos, True):
-                if neighbor.status == "Fine":
+                if isinstance(neighbor, Tree) and neighbor.status == "Fine":
                     neighbor.status = "Burning"
             self.status = "Burned"
