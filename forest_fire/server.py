@@ -1,6 +1,6 @@
 import mesa
 import mesa.visualization
-from forest_fire.tree import Tree, terra
+from forest_fire.tree import Tree, Terra
 from forest_fire.model import ForestFire
 
 # Ajuste do tamanho do grid e da tela
@@ -30,8 +30,8 @@ def tree_portrayal(agent):
     portrayal = {}
     x, y = agent.pos
 
-    # Se o agente for do tipo 'terra'
-    if isinstance(agent, terra):
+    # Se o agente for do tipo 'Terra'
+    if isinstance(agent, Terra):
         # Verifica se há uma árvore diretamente sobre a terra
         agents_in_cell = agent.model.grid.get_cell_list_contents([agent.pos])
         
@@ -71,7 +71,7 @@ def tree_portrayal(agent):
     elif isinstance(agent, Tree):
         image = agent.get_image()  # Caminho da imagem da árvore
         portrayal["Color"] = COLORS.get(agent.status, "#E3966B")  # Cor da árvore com base no status
-        portrayal["Shape"] = image  # A árvore será representada como um quadrado (ou outra forma, dependendo da imagem)
+        portrayal["Shape"] = image if image else 'rect'  # A árvore será representada como um quadrado (ou outra forma, dependendo da imagem)
         portrayal["Scale"] = 1.1
         portrayal["Filled"] = "true"
         portrayal["Layer"] = 1

@@ -1,6 +1,6 @@
 import mesa
 from typing import Literal
-from forest_fire.tree import Tree, terra
+from forest_fire.tree import Tree, Terra
 from forest_fire.biome import biomes
 
 class ForestFire(mesa.Model):
@@ -25,14 +25,14 @@ class ForestFire(mesa.Model):
                 "Fine": lambda model: self.count_type(model, "Fine", agent_type=Tree),
                 "Burning": lambda model: self.count_type(model, "Burning", agent_type=Tree),
                 "Burned": lambda model: self.count_type(model, "Burned", agent_type=Tree),
-                "Terra": lambda model: self.count_type(model, agent_type=terra),  # Conta o número de agentes do tipo Terra
+                "Terra": lambda model: self.count_type(model, agent_type=Terra),  # Conta o número de agentes do tipo Terra
                 "Total": lambda model: self.count_type(model, agent_type=Tree)  # Conta o número total de árvores
             }
         )   
 
         # Inicializa o grid com terra
         for contents, (x, y) in self.grid.coord_iter():
-            terra_agent = terra((x, y), self)
+            terra_agent = Terra((x, y), self)
             self.grid.place_agent(terra_agent, (x, y))
 
         self._initialize_trees()
@@ -49,12 +49,9 @@ class ForestFire(mesa.Model):
         for agent in model.schedule.agents:
             # Verifica se o tipo de agente corresponde ao tipo fornecido
             if isinstance(agent, agent_type):
-                # Se um status for fornecido, verifica se o status do agente corresponde
-                if status:
-                    if agent.status == status:
-                        count += 1
-                else:
-                    # Caso contrário, conta todos os agentes do tipo fornecido
+                # Se o status não for fornecido, conta todos os agentes do tipo fornecido
+                # Caso contrário, verifica se o status do agente corresponde.
+                if (not status) or agent.status == status:
                     count += 1
         return count
 
@@ -64,21 +61,23 @@ class ForestFire(mesa.Model):
         Algumas árvores começam com o status "Burning".
         """
         for _contents, pos in self.grid.coord_iter():
+            # Determina se a árvore vai ser plantada ou não
+            if self.random.random() > self.tree_density:
+                continue
+            
             size = self.biome.fauna_size.sort_value()  # Tamanho da árvore conforme o bioma
             color = self.biome.fauna_color  # Cor do bioma para a árvore
-            tree = Tree(self.next_id(), self, pos, size, color)
+            img_path = f'forest_fire/images/{self.biome.code}' # Caminho para a imagem do bioma
+            tree = Tree(self.next_id(), self, pos, size, color, img_path)
 
-            # Determina se a árvore vai ser plantada com fogo ou não
-            if self.random.random() < self.tree_density:
-                self.schedule.add(tree)
-                self.grid.place_agent(tree, pos)
-                # Adiciona fogo em uma árvore na primeira linha ou posição aleatória
-                if pos[0] == 0 and self.random.random() < 0.1:
-                    tree.status = "Burning"
-                else:
-                    tree.status = "Fine"
+            self.schedule.add(tree)
+            self.grid.place_agent(tree, pos)
+            # Adiciona fogo em uma árvore na primeira linha ou posição aleatória
+            # TODO: atualizar isso com a branch de Inícios de incêndio quando possível.
+            if pos[0] == 0 and self.random.random() < 0.1:
+                tree.status = "Burning"
             else:
-                tree.status = "Burned"  # Algumas árvores começam como "Burned"
+                tree.status = "Fine"
 
     def step(self):
         """
