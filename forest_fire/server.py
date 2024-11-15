@@ -8,12 +8,13 @@ CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 500
 
 COLORS = {
-    "Fine": "#00AA00",
-    "Burning": "#FF0000",
-    "Burned": "#3D2B1F",
-    "Lake": "blue",
+    "Fine": "#00AA00", #green
+    "Burning": "#cf0f0f", #red
+    "Burned": "#3D2B1F", #black
+    "Lake": "#3babe6", #blue
     "Corridor": "orange",
     "Obstacle": "grey",
+    "Ground": "#dcc9a4" #ligth earthy color
 }
 
 
