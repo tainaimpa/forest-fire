@@ -11,6 +11,9 @@ COLORS = {
     "Fine": "#00AA00",
     "Burning": "#FF0000",
     "Burned": "#3D2B1F",
+    "Lake": "blue",
+    "Corridor": "orange",
+    "Obstacle": "grey",
 }
 
 
@@ -40,7 +43,7 @@ tree_chart = mesa.visualization.ChartModule(
 )
 
 pie_chart = mesa.visualization.PieChartModule(
-    [{"Label": label, "Color": color} for (label, color) in COLORS.items()]
+    [{"Label": label, "Color": color} for (label, color) in COLORS.items() if label in ["Fine", "Burning", "Burned"]]
 )
 
 model_params = {

@@ -1,6 +1,10 @@
 import mesa
 
-from forest_fire.tree import Tree
+from forest_fire.tree import Tree, Lake, Corridor, Obstacle
+from mesa import Model
+from mesa.time import RandomActivation
+from mesa.space import MultiGrid
+import random
 
 
 class ForestFire(mesa.Model):
@@ -31,16 +35,16 @@ class ForestFire(mesa.Model):
 
     def _initialize_trees(self):
         for _contents, pos in self.grid.coord_iter():
-            tree = Tree(self.next_id(), self, pos)
-            if self.random.random() < self.tree_density:
-                if pos[0] == 0:  # set first column to Burning
-                    tree.status = "Burning"
-                else:
-                    tree.status = "Fine"
-            else:
-                tree.status = "Burned"
-            self.schedule.add(tree)
-            self.grid.place_agent(tree, pos)
+            if random.random() < self.tree_density:
+                agent_type = random.choices(
+                    [Tree, Lake, Corridor, Obstacle], 
+                    weights=[0.7, 0.1, 0.1, 0.1]
+                )[0]
+                agent = agent_type(self.next_id(), self, pos)
+                if isinstance(agent, Tree) and pos[0] == 0:  # set first column to Burning
+                    agent.status = "Burning"
+                self.schedule.add(agent)
+                self.grid.place_agent(agent, pos)
 
     def step(self):
         self.schedule.step()
