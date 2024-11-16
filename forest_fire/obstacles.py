@@ -5,7 +5,7 @@ class Obstacle(Agent): # Create a general obstacle
     def __init__(self, unique_id, model, pos):
         super().__init__(unique_id, model)
         self.burnable = False
-        self.pos
+        self.pos = pos
         self.status = "Obstacle"
         
 class River(Obstacle):
@@ -25,6 +25,7 @@ class Lake(Obstacle):
     def __init__(self, unique_id, model, pos):
         super().__init__(unique_id, model, pos)
         self.burnable = False
+        self.status = "Lake"
 
 class Corridor(Obstacle):
     def __init__(self, unique_id, model, pos):

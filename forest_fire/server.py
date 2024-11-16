@@ -11,7 +11,7 @@ COLORS = {
     "Fine": "#00AA00", #green
     "Burning": "#cf0f0f", #red
     "Burned": "#3D2B1F", #black
-    "Lake": "#3babe6", #blue
+    "Lake": "#4a8be8", #blue
     "Corridor": "orange",
     "Obstacle": "grey",
     "Ground": "#dcc9a4" #ligth earthy color
@@ -51,6 +51,8 @@ model_params = {
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
+    "water_density": mesa.visualization.Slider("Water Density", 0.15, 0.01, 1.0, 0.01),
+    "num_of_lakes": mesa.visualization.Slider("Number of Lakes", 1, 0, 10, 1),
 }
 
 server = mesa.visualization.ModularServer(
