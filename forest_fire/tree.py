@@ -5,10 +5,11 @@ class Terra(mesa.Agent):
     O agente terra preenche todo o grid.
     Ele altera sua cor dependendo do status da árvore sobre ele.
     """
-    def __init__(self, pos, model):
+    def __init__(self, pos, model, img_path: str = None):
         super().__init__(pos, model)
         self.pos = pos
         self.color = "#E3966B"  # Cor inicial da terra (terra nua)
+        self.img_path = img_path
 
     def update_color(self):
         """
@@ -36,6 +37,9 @@ class Terra(mesa.Agent):
         Atualiza a cor da terra a cada passo.
         """
         self.update_color()
+        
+    def get_image(self):
+        return f'{self.img_path}/terra.png'
 
 
 class Tree(mesa.Agent):

@@ -2,21 +2,24 @@ import mesa
 import mesa.visualization
 from forest_fire.tree import Tree, Terra
 from forest_fire.model import ForestFire
+from forest_fire.tree import Tree
+from forest_fire.cloud import Cloud
 
 # Ajuste do tamanho do grid e da tela
-GRID_WIDTH = 10
-GRID_HEIGHT = 10        
+GRID_WIDTH = 100
+GRID_HEIGHT = 100     
 CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 500
 
 # Definindo as cores baseadas no status das árvores
 COLORS = {
-    "Burning": "#FF0000",  # Cor para árvores em chamas
-    "Burned": "#3D2B1F",   # Cor para árvores queimadas
-    "Fine": "#00AA00",     # Cor para árvores saudáveis
+    "Fine": "#00AA00",
+    "Burning": "#FF0000",
+    "Burned": "#3D2B1F",
+    "Cloud": "#A0A0A0",  # TODO nuvens cheias mais escuras 
 }
 
-def tree_portrayal(agent):
+def agent_portrayal(agent):
     """
     Função que determina como um agente (árvore ou terra) será representado no grid.
 
@@ -28,7 +31,12 @@ def tree_portrayal(agent):
         return {}
 
     portrayal = {}
+    
     x, y = agent.pos
+    
+    # Características comuns a todos agentes
+    portrayal["x"] = x
+    portrayal["y"] = y
 
     # Se o agente for do tipo 'Terra'
     if isinstance(agent, Terra):
@@ -60,11 +68,9 @@ def tree_portrayal(agent):
             portrayal["Shape"] = sem_arvore  # imagem da terra no bioma selecionado
             portrayal["Filled"] = "true"
             portrayal["Layer"] = 0
-
-        portrayal["w"] = 1  # Largura da célula no grid
-        portrayal["h"] = 1  # Altura da célula no grid
-        portrayal["x"] = x
-        portrayal["y"] = y
+            
+        portrayal["w"] = 1  # Largura da célula no grid (pode ser ajustada)
+        portrayal["h"] = 1  # Altura da célula no grid (pode ser ajustada)
            
 
     # Se o agente for uma árvore
@@ -77,15 +83,22 @@ def tree_portrayal(agent):
         portrayal["Layer"] = 1
         portrayal["w"] = 1  # Largura da célula no grid (pode ser ajustada)
         portrayal["h"] = 1  # Altura da célula no grid (pode ser ajustada)
-        portrayal["x"] = x
-        portrayal["y"] = y
+        
+    # Se o agente for uma nuvem
+    elif isinstance(agent, Cloud):
+        portrayal["Shape"] = 'circle'
+        portrayal["r"] = agent.size
+        portrayal["Filled"] = True
+        portrayal["Layer"] = 2
+        portrayal["color"] = COLORS["Cloud"]
 
     return portrayal
 
 canvas_element = mesa.visualization.CanvasGrid(
-    tree_portrayal, GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
+    lambda agent: agent_portrayal(agent),
+    GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
 )
-
+# TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
 tree_chart = mesa.visualization.ChartModule(
     [{"Label": label, "Color": color} for label, color in COLORS.items()]
 )
@@ -95,9 +108,12 @@ pie_chart = mesa.visualization.PieChartModule(
 )
 
 model_params = {
+    "rainy_season": mesa.visualization.Checkbox("Estação chuvosa", False),
+    "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
-    "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
+    "tree_density": mesa.visualization.Slider("Tree Density", 0.0, 0.0, 1.0, 0.01),
+    "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
 }
 
 server = mesa.visualization.ModularServer(
