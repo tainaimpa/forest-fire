@@ -8,16 +8,16 @@ class Obstacle(Agent): # Create a general obstacle
         self.pos = pos
         self.status = "Obstacle"
         
-class River(Obstacle):
+class Puddle(Obstacle):
     def __init__(self, unique_id, model, pos):
         super().__init__(unique_id, model)
         self.burnable = True
-        self.status = 'Flowing'
+        self.status = "Wet"
         
     def step(self):
         if self.status == 'Steaming' and self.width != 1:
             for neighbor in self.model.grid.iter_neighbors(self.width, True):
-                if neighbor.status == "Flowing":
+                if neighbor.status == "Wet":
                     neighbor.status = "Steaming"
             self.status = "Evaporated"
             
