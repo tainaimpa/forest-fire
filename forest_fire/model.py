@@ -22,7 +22,7 @@ class ForestFire(mesa.Model):
                 "Fine": lambda model: self.count_type(model, "Fine"),
                 "Burning": lambda model: self.count_type(model, "Burning"),
                 "Burned": lambda model: self.count_type(model, "Burned"),
-                "CO2": lambda model: self.count_CO2(model)
+                "CO2(Kg)": lambda model: self.count_CO2(model)
             }
         )
 

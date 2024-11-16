@@ -10,8 +10,7 @@ CANVAS_HEIGHT = 500
 COLORS = {
     "Fine": "#00AA00",
     "Burning": "#FF0000",
-    "Burned": "#3D2B1F",
-    'CO2':"#0000FF",
+    "Burned": "#3D2B1F"
 }
 
 
@@ -31,6 +30,10 @@ def tree_portrayal(tree):
         "Color": COLORS[tree.status],
     }
 
+# Criando o gráfico de CO2 separadamente
+co2_chart = mesa.visualization.ChartModule(
+    [{"Label": "CO2(Kg)", "Color": "#000000"}],
+)
 
 canvas_element = mesa.visualization.CanvasGrid(
     tree_portrayal, GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
@@ -51,5 +54,5 @@ model_params = {
 }
 
 server = mesa.visualization.ModularServer(
-    ForestFire, [canvas_element, tree_chart, pie_chart], "Forest Fire", model_params
+    ForestFire, [canvas_element, tree_chart, pie_chart, co2_chart], "Forest Fire", model_params
 )
