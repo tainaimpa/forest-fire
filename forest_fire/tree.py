@@ -1,7 +1,7 @@
 import mesa
 import random
 
-from forest_fire.obstacles import Lake
+from forest_fire.obstacles import Lake, Corridor
 
 class Tree(mesa.Agent):
     def __init__(self, unique_id, model, pos):
@@ -19,4 +19,9 @@ class Tree(mesa.Agent):
                 for neighbor in self.model.grid.iter_neighbors(self.pos, moore=True):
                     if neighbor.status == "Fine" and neighbor.burnable:
                         neighbor.status = "Burning"
+                    if neighbor.status == 'Corridor' and neighbor.burnable:
+                        neighbor.status = "Burned"
+                        for neighbor_c in self.model.grid.iter_neighbors(neighbor.pos, moore=True):
+                            if neighbor_c.status == "Fine" and neighbor_c.burnable:
+                                neighbor_c.status = "Burning"
             self.status = "Burned"

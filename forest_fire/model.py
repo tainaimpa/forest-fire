@@ -18,7 +18,9 @@ class ForestFire(mesa.Model):
         height=100,
         tree_density=0.65,
         water_density=0.15,
-        num_of_lakes=1
+        num_of_lakes=1,
+        obstacles=True,
+        corridor=True
     ):
         super().__init__()
         self.width = width
@@ -26,6 +28,8 @@ class ForestFire(mesa.Model):
         self.tree_density = tree_density
         self.water_density = water_density
         self.num_of_lakes = num_of_lakes
+        self.obstacles = obstacles
+        self.corridor = corridor
         self.schedule = mesa.time.RandomActivation(self)
         self.grid = mesa.space.SingleGrid(self.width, self.height, torus=False)
 
@@ -42,6 +46,15 @@ class ForestFire(mesa.Model):
         self.datacollector.collect(self)
 
     def _initialize_trees(self):
+        types = [Ground, Corridor, Obstacle]
+        weights_list = [0.5, 0.1, 0.1]
+        if not self.obstacles:
+            types.remove(Obstacle)
+            weights_list.pop()
+        if not self.corridor:
+            types.remove(Corridor)
+            weights_list.pop()
+        
         for _ in range(self.num_of_lakes):
             self._initialize_lake_organic()
         for _contents, pos in self.grid.coord_iter():
@@ -59,8 +72,8 @@ class ForestFire(mesa.Model):
                     self.grid.place_agent(agent, pos)
             else:
                 agent_type = random.choices(
-                    [Ground, Corridor, Obstacle], 
-                    weights=[0.5, 0.1, 0.1])[0]
+                    types, 
+                    weights=weights_list)[0]
                 agent = agent_type(self.next_id(), self, pos)
                 self.schedule.add(agent)
                 if self.grid.is_cell_empty(pos):
