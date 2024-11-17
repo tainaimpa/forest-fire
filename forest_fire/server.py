@@ -51,6 +51,7 @@ model_params = {
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
+    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.1) 
 }
 
 server = mesa.visualization.ModularServer(

@@ -9,6 +9,7 @@ class ForestFire(mesa.Model):
         width=100,
         height=100,
         tree_density=0.65,
+        reprod_speed=1, 
     ):
         super().__init__()
         self.width = width
@@ -16,6 +17,7 @@ class ForestFire(mesa.Model):
         self.tree_density = tree_density
         self.schedule = mesa.time.RandomActivation(self)
         self.grid = mesa.space.SingleGrid(self.width, self.height, torus=False)
+        self.reprod_speed = reprod_speed 
 
         self.datacollector = mesa.DataCollector(
             model_reporters={
@@ -31,8 +33,9 @@ class ForestFire(mesa.Model):
         self.datacollector.collect(self)
 
     def _initialize_trees(self):
+        tree_den = self.tree_density
         for _contents, pos in self.grid.coord_iter():
-            tree = Tree(self.next_id(), self, pos)
+            tree = Tree(self.next_id(), self, pos, tree_den, self.reprod_speed)
             if self.random.random() < self.tree_density:
                 if pos[0] == 0:  # set first column to Burning
                     tree.status = "Burning"
@@ -60,7 +63,7 @@ class ForestFire(mesa.Model):
         CO_emission_total = 0
         for tree in model.schedule.agents:
             CO_emission_total += tree.CO_emission
-        print(CO_emission_total)
+            CO_emission_total -= tree.CO_sequestered
         return CO_emission_total
 
 
