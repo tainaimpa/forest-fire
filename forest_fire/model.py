@@ -17,7 +17,7 @@ class ForestFire(mesa.Model):
         super().__init__()
 
         # Recupera o bioma escolhido
-        self.biome = biomes["Cerrado"]
+        self.biome = biomes[biome_name]
         self.width = width
         self.height = height
         self.tree_density = self.biome.density if tree_density == 0 else tree_density
@@ -49,6 +49,7 @@ class ForestFire(mesa.Model):
             self.grid.place_agent(terra_agent, (x, y))
 
         self._initialize_trees()
+        
         if rainy_season:
             self._initialize_clouds(cloud_quantity)   #TODO associar a biomas 
 
@@ -61,27 +62,25 @@ class ForestFire(mesa.Model):
         Algumas árvores começam com o status "Burning".
         """
         for _contents, pos in self.grid.coord_iter():
-            # Determina se a árvore vai ser plantada ou não
-            if self.random.random() > self.tree_density:
-                continue
-            
             size = self.biome.size.sort_value()  # Tamanho da árvore conforme o bioma
             color = self.biome.color  # Cor do bioma para a árvore
-            img_path = self.biome.img_path # Caminho para a imagem do bioma
-            tree = Tree(self.next_id(), self, pos, size, color, img_path)
+            tree = Tree(self.next_id(), self, pos, size, color)
 
-            self.schedule.add(tree)
-            self.grid.place_agent(tree, pos)
-            # Adiciona fogo em uma árvore na primeira linha ou posição aleatória
-            # TODO: atualizar isso com a branch de Inícios de incêndio quando possível.
-            if pos[0] == 0 and self.random.random() < 0.1:
-                tree.status = "Burning"
+            # Determina se a árvore vai ser plantada com fogo ou não
+            if self.random.random() < self.tree_density:
+                self.schedule.add(tree)
+                self.grid.place_agent(tree, pos)
+                # Adiciona fogo em uma árvore na primeira linha ou posição aleatória
+                if pos[0] == 0 and self.random.random() < 0.1:
+                    tree.status = "Burning"
+                else:
+                    tree.status = "Fine"
             else:
-                tree.status = "Fine"
+                tree.status = "Burned"  # Algumas árvores começam como "Burned"
 
     def _initialize_clouds(self, cloud_count):
         """Inicializa nuvens no grid com tamanhos e posições aleatórias."""
-        print(cloud_count)
+        
         for _ in range(cloud_count):
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
@@ -99,11 +98,10 @@ class ForestFire(mesa.Model):
         self.schedule.step()  # Avança o passo do modelo
         self.datacollector.collect(self)  # Coleta dados após cada passo
         
-        self._initialize_trees()
-        
         # Adiciona novas nuvens com tamanhos variados a cada 10 passos
         if self.rainy_season and self.schedule.steps % 10 == 0:
             self._initialize_clouds(5)  # Adiciona 5 novas nuvens a cada 10 passos
+            
 
     def get_neighbors(self, pos, include_center=False):
         """
