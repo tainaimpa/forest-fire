@@ -88,7 +88,7 @@ def agent_portrayal(agent):
     elif isinstance(agent, Cloud):
         portrayal["Shape"] = 'circle'
         portrayal["r"] = agent.size
-        portrayal["Filled"] = True
+        portrayal["Filled"] = "true"
         portrayal["Layer"] = 2
         portrayal["color"] = COLORS["Cloud"]
 
