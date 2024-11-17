@@ -6,8 +6,8 @@ from forest_fire.tree import Tree
 from forest_fire.cloud import Cloud
 
 # Ajuste do tamanho do grid e da tela
-GRID_WIDTH = 100
-GRID_HEIGHT = 100     
+GRID_WIDTH = 10
+GRID_HEIGHT = 10    
 CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 500
 
