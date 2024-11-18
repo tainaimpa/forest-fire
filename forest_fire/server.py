@@ -2,12 +2,11 @@ import mesa
 import mesa.visualization
 from forest_fire.tree import Tree, Terra
 from forest_fire.model import ForestFire
-from forest_fire.tree import Tree
 from forest_fire.cloud import Cloud
 
 # Ajuste do tamanho do grid e da tela
-GRID_WIDTH = 10
-GRID_HEIGHT = 10    
+GRID_WIDTH = 30
+GRID_HEIGHT = 30    
 CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 500
 
@@ -28,75 +27,52 @@ def agent_portrayal(agent):
     """
     # Verifica se o agente é 'None' (caso o grid tenha uma célula vazia)
     if not agent:
-        return {}
+        return 
 
-    portrayal = {}
-    
     x, y = agent.pos
-    
-    # Características comuns a todos agentes
-    portrayal["x"] = x
-    portrayal["y"] = y
 
-    # Se o agente for do tipo 'Terra'
-    if isinstance(agent, Terra):
+    if type(agent) is Terra:
         # Verifica se há uma árvore diretamente sobre a terra
-        agents_in_cell = agent.model.grid.get_cell_list_contents([agent.pos])
+        tree_in_cell = agent.model.get_agents_of_type(Tree)
         
-        # Procura por uma árvore na célula de terra
-        tree_in_cell = None
-        for agent in agents_in_cell:
-            if isinstance(agent, Tree):  # Se encontrar uma árvore, armazena
-                tree_in_cell = agent
-                break
+        shape = "rect" if tree_in_cell else "forest_fire/images/cerrado/terra.png"
+        color =  "#E3966B" if tree_in_cell else "#3D2B1F"
+      
+        return {"x" : x,
+                "y" : y,
+                "w" : 1,
+                "h" : 1,
+                "Layer" : 0,
+                "Filled": True,
+                "Shape": shape,
+                "Color": color}
 
-        # Se houver uma árvore sobre a terra, a cor da terra será a cor da árvore
-        if tree_in_cell:
-            portrayal["Color"] = COLORS.get(tree_in_cell.status, "#E3966B")  # Cor da árvore 
-            portrayal["Shape"] = "rect"
-            portrayal["Filled"] = "true"
-            portrayal["Layer"] = 0
-  
-        else:
-            """
-            Acrescentar: Mudança da terra de acordo com o bioma.
-            Substituir pela imagem transparente (para que a terra mude de acordo com a influência das
-            células vizinhas, com condições: se 5 células vizinhas terem árvores queimadas então a terra
-            recebe no layer 0 a cor da árvore - simulando que o fogo se alastra pela terra visualmente). 
-            """
-            sem_arvore = "forest_fire/images/cerrado/terra.png"
-            portrayal["Shape"] = sem_arvore  # imagem da terra no bioma selecionado
-            portrayal["Filled"] = "true"
-            portrayal["Layer"] = 0
-            
-        portrayal["w"] = 1  # Largura da célula no grid (pode ser ajustada)
-        portrayal["h"] = 1  # Altura da célula no grid (pode ser ajustada)
-           
-
-    # Se o agente for uma árvore
-    elif isinstance(agent, Tree):
-        image = agent.get_image()  # Caminho da imagem da árvore
-        portrayal["Color"] = COLORS.get(agent.status, "#E3966B")  # Cor da árvore com base no status
-        portrayal["Shape"] = image if image else 'rect'  # A árvore será representada como um quadrado (ou outra forma, dependendo da imagem)
-        portrayal["Scale"] = 1.1
-        portrayal["Filled"] = "true"
-        portrayal["Layer"] = 1
-        portrayal["w"] = 1  # Largura da célula no grid (pode ser ajustada)
-        portrayal["h"] = 1  # Altura da célula no grid (pode ser ajustada)
+    elif type(agent) is Tree:
         
-    # Se o agente for uma nuvem
-    elif isinstance(agent, Cloud):
-        portrayal["Shape"] = 'circle'
-        portrayal["r"] = agent.size
-        portrayal["Filled"] = "true"
-        portrayal["Layer"] = 2
-        portrayal["color"] = COLORS["Cloud"]
+        image = agent.get_image()
+        shape = image if image else 'rect'
 
-    return portrayal
+        return {"x" : x,
+                "y" : y,
+                "w" : 1,
+                "h" : 1,
+                "Layer" : 1,
+                "Scale" : 1.1,
+                "Filled": True,
+                "Shape": shape,
+                "Color": COLORS.get(agent.status, "#E3966B")}
 
-canvas_element = mesa.visualization.CanvasGrid(
-    lambda agent: agent_portrayal(agent),
-    GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
+    elif type(agent) is Cloud:
+            return {
+        "Shape": "circle",
+        "r": agent.size,  
+        "Filled": True,
+        "Layer": 20,
+        "x": x,
+        "y": y,
+        "Color": COLORS["Cloud"], }
+
+canvas_element = mesa.visualization.CanvasGrid(agent_portrayal, GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
 )
 # TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
 tree_chart = mesa.visualization.ChartModule(

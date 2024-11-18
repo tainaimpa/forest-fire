@@ -8,10 +8,11 @@ class ForestFire(mesa.Model):
     def __init__(
         self,
         biome_name: str, 
-        width=100,
-        height=100,
+        width=30,
+        height=30,
         tree_density=0,
         rainy_season=False,
+        imagens=False,
         cloud_quantity=0,
     ):
         super().__init__()
@@ -27,7 +28,7 @@ class ForestFire(mesa.Model):
         
         # Cria o grid de árvores
         self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
-        
+        self.imagens = imagens
         self.rainy_season = rainy_season
         self.cloud_quantity = cloud_quantity
 
@@ -66,7 +67,7 @@ class ForestFire(mesa.Model):
             color = self.biome.color  # Cor do bioma para a árvore
             tree = Tree(self.next_id(), self, pos, size, color)
 
-            # Determina se a árvore vai ser plantada com fogo ou não
+            # Determina se a árvore vai ser plantada com fogo ou não TODO definir outro critério
             if self.random.random() < self.tree_density:
                 self.schedule.add(tree)
                 self.grid.place_agent(tree, pos)
@@ -102,7 +103,7 @@ class ForestFire(mesa.Model):
         if self.rainy_season and self.schedule.steps % 10 == 0:
             self._initialize_clouds(5)  # Adiciona 5 novas nuvens a cada 10 passos
             
-
+    # pq não usar direto?
     def get_neighbors(self, pos, include_center=False):
         """
         Função que retorna os vizinhos de uma posição (posição do agente no grid).
