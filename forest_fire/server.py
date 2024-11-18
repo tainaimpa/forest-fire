@@ -54,7 +54,8 @@ model_params = {
     "water_density": mesa.visualization.Slider("Water Density", 0.15, 0, 1.0, 0.01),
     "num_of_lakes": mesa.visualization.Slider("Number of Lakes", 1, 0, 10, 1),
     "obstacles": mesa.visualization.Checkbox("Obstacles", True),
-    "corridor": mesa.visualization.Checkbox("Corridor", True)
+    "corridor": mesa.visualization.Checkbox("Corridor", True),
+    "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True)
 }
 
 server = mesa.visualization.ModularServer(

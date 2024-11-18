@@ -20,7 +20,8 @@ class ForestFire(mesa.Model):
         water_density=0.15,
         num_of_lakes=1,
         obstacles=True,
-        corridor=True
+        corridor=True,
+        individual_lakes=True
     ):
         super().__init__()
         self.width = width
@@ -30,6 +31,7 @@ class ForestFire(mesa.Model):
         self.num_of_lakes = num_of_lakes
         self.obstacles = obstacles
         self.corridor = corridor
+        self.individual_lakes = individual_lakes
         self.schedule = mesa.time.RandomActivation(self)
         self.grid = mesa.space.SingleGrid(self.width, self.height, torus=False)
 
@@ -46,15 +48,6 @@ class ForestFire(mesa.Model):
         self.datacollector.collect(self)
 
     def _initialize_trees(self):
-        types = [Ground, Corridor, Obstacle]
-        weights_list = [0.5, 0.1, 0.1]
-        if not self.obstacles:
-            types.remove(Obstacle)
-            weights_list.pop()
-        if not self.corridor:
-            types.remove(Corridor)
-            weights_list.pop()
-        
         for _ in range(self.num_of_lakes):
             self._initialize_lake_organic()
         for _contents, pos in self.grid.coord_iter():
@@ -65,20 +58,46 @@ class ForestFire(mesa.Model):
                 self.schedule.add(agent)
                 if self.grid.is_cell_empty(pos):
                     self.grid.place_agent(agent, pos)
-            elif random.random() < self.water_density**2:
-                agent = Lake(self.next_id(), self, pos)
-                if self.grid.is_cell_empty(pos):
-                    self.schedule.add(agent)
-                    self.grid.place_agent(agent, pos)
+            elif self.individual_lakes and random.random() < self.water_density**2:
+                self._initialize_water(pos)
             else:
-                agent_type = random.choices(
-                    types, 
-                    weights=weights_list)[0]
-                agent = agent_type(self.next_id(), self, pos)
-                self.schedule.add(agent)
-                if self.grid.is_cell_empty(pos):
-                    self.grid.place_agent(agent, pos)
+                self._initialize_other_agent(pos)
+                    
+    def _initialize_other_agent(self, pos):
+        def get_types_and_weights():
+            types = ["Ground", "Corridor", "Obstacle"]
+            weights_list = [0.5, 0.1, 0.1]
+            if not self.obstacles:
+                types.remove("Obstacle")
+                weights_list.pop()
+            if not self.corridor:
+                types.remove("Corridor")
+                weights_list.pop()
+            return types, weights_list
+            
+        types, weights_list = get_types_and_weights()
+            
+        agent_type = random.choices(types, weights=weights_list)[0]
+        match agent_type:
+            case "Ground":
+                self._initialize_ground(pos)
+            case "Corridor":
+                self._initialize_corridor(pos)
+            case "Obstacle":
+                self._initialize_obstacle(pos)
                 
+    def _initialize_ground(self, pos):
+        ground = Ground(self.next_id(), self, pos)
+        if self.grid.is_cell_empty(pos):
+            self.schedule.add(ground)
+            self.grid.place_agent(ground, pos)
+            
+    def _initialize_water(self, pos):
+        water = Lake(self.next_id(), self, pos)
+        if self.grid.is_cell_empty(pos):
+            self.schedule.add(water)
+            self.grid.place_agent(water, pos)
+            
     def _initialize_lake(self):
         self.lake_size = int(self.water_density*50)
         x, y = random.randint(0, self.width - 1), random.randint(0, self.height - 1)
@@ -92,7 +111,7 @@ class ForestFire(mesa.Model):
             self.grid.place_agent(lake, pos)
 
     def _initialize_lake_organic(self):
-        self.lake_size = int(self.water_density * 100)
+        self.lake_size = int(self.water_density * 50)
         x, y = random.randint(0, self.width - 1), random.randint(0, self.height - 1)
         center_lake = Lake(self.next_id(), self, (x, y))
         self.schedule.add(center_lake)
@@ -111,8 +130,21 @@ class ForestFire(mesa.Model):
             noise_value = smoothed_noise[pos[1]][pos[0]]
             if noise_value > 1e-15:  # Adjust threshold for desired lake shape
                 lake = Lake(self.next_id(), self, pos)
-                self.schedule.add(lake)
-                self.grid.place_agent(lake, pos)
+                if self.grid.is_cell_empty(pos):
+                    self.schedule.add(lake)
+                    self.grid.place_agent(lake, pos)           
+
+    def _initialize_obstacle(self, pos):
+        obstacle = Obstacle(self.next_id(), self, pos)
+        self.schedule.add(obstacle)
+        if self.grid.is_cell_empty(pos):
+            self.grid.place_agent(obstacle, pos)
+    
+    def _initialize_corridor(self, pos):
+        corridor = Corridor(self.next_id(), self, pos)
+        self.schedule.add(corridor)
+        if self.grid.is_cell_empty(pos):
+            self.grid.place_agent(corridor, pos)
 
     def step(self):
         self.schedule.step()
