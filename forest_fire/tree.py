@@ -1,19 +1,27 @@
 import mesa
 
+# Dicionário de cores para cada status da árvore
+COLORS = {
+    "Fine": "#00AA00",
+    "Burning": "#FF0000",  # Cor para árvores queimando (vermelho)
+    "Burned": "#3D2B1F"    # Cor para árvores queimadas (marrom escuro)
+}
+
 class Terra(mesa.Agent):
     """
     O agente terra preenche todo o grid.
     Ele altera sua cor dependendo do status da árvore sobre ele.
     """
-    def __init__(self, pos, model, img_path: str = None):
+    def __init__(self, pos, model, color: str, img_path: str = None):
         super().__init__(pos, model)
         self.pos = pos
-        self.color = "#E3966B"  # Cor inicial da terra (terra nua)
         self.img_path = img_path
-
+        self.color = "#E3966B"  # Cor padrão da terra (terra nua)
+               
     def update_color(self):
         """
         Atualiza a cor da terra de acordo com o status da árvore sobre ela.
+        Se não houver árvore, usa a imagem padrão 'terra.png'.
         """
         # Obtém os agentes na célula atual (no caso, pode haver apenas uma árvore)
         agents_in_cell = self.model.grid.get_cell_list_contents([self.pos])
@@ -25,23 +33,35 @@ class Terra(mesa.Agent):
                 tree = agent
                 break  # Só há uma árvore por célula, então podemos sair do loop
 
-        # Se houver uma árvore, atualize a cor da terra com base no seu status
+        # Se houver uma árvore, atualize a imagem/cor da terra com base no seu status
 
         if tree:
-            self.color = tree.color  # Cor da árvore saudável
+            if tree.status == "Fine":
+                # Se a árvore estiver "Fine", a terra terá a cor do bioma
+                self.color = self.model.biome.color  # Define a cor da terra como a cor do bioma
+                self.img_path = None  # Não precisamos de imagem, apenas a cor
+            else:
+                # Para os status "Burning" e "Burned", usamos as cores associadas
+                self.color = COLORS.get(tree.status, "#E3966B")  # A cor associada ao status da árvore
+                self.img_path = None  # Não precisamos de imagem, apenas a cor
+        
         else:
-            self.color = "#E3966B"  # Caso não haja árvore, mantém a cor original
-
+            # Se não houver árvore, verificamos o bioma
+            if self.model.biome.name != "Default":
+                # Se o bioma não for "Default", usamos a imagem da terra associada ao bioma
+                self.color = None  # Não usamos cor, porque vamos usar a imagem da terra
+                self.img_path = f"{self.model.biome.img_path}/terra.png"
+            else:
+                # Se o bioma for "Default", mantemos a cor padrão da terra
+                self.color = "#E3966B"  # Cor padrão da terra
+                self.img_path = None  # Não usamos imagem
+        
     def step(self):
         """
         Atualiza a cor da terra a cada passo.
         """
         self.update_color()
         
-    def get_image(self):
-        return f'{self.img_path}/terra.png'
-
-
 class Tree(mesa.Agent):
     """
     A árvore é um agente que pode ter diferentes estados, como 'Fine', 'Burning' ou 'Burned'.
@@ -68,21 +88,22 @@ class Tree(mesa.Agent):
     def get_image(self):
         """
         Retorna a imagem associada com base no tamanho da árvore.
-        Acrescentar: imagem de acordo com o bioma.
+        A árvore terá uma imagem associada ao bioma e seu tamanho.
         """
         if not self.img_path:
             return None
         
-        if self.size <= 3:
+        if self.size <= 8:
             img_file = "arvore1.png"  # Imagem para árvores bem pequenas
-        elif self.size <= 5:
+        elif self.size <= 15:
             img_file = "arvore2.png"  # Imagem para árvores pequenas
-        elif self.size <= 7:
+        elif self.size <= 30:
             img_file = "arvore3.png"  # Imagem para árvores média
-        elif self.size <= 9:
+        elif self.size <= 40:
             img_file = "arvore4.png"  # Imagem para árvores grandes
         else:
             img_file = "arvore5.png"  # Imagem para árvores bem grandes
 
-        return f"{"forest-fire/forest_fire/images/pantanal"}/{img_file}"#self.model.biome.img_path
+        # Retorna o caminho da imagem da árvore com base no seu tamanho
+        return f"{self.model.biome.img_path}/{img_file}"
 
