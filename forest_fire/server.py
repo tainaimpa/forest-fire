@@ -4,8 +4,8 @@ from forest_fire.model import ForestFire
 
 GRID_WIDTH = 100
 GRID_HEIGHT = 100
-CANVAS_WIDTH = 500
-CANVAS_HEIGHT = 500
+CANVAS_WIDTH = 750
+CANVAS_HEIGHT = 750
 
 COLORS = {
     "Fine": "#148c39", #green
@@ -51,11 +51,12 @@ model_params = {
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
+    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.1), 
     "water_density": mesa.visualization.Slider("Water Density", 0.15, 0, 1.0, 0.01),
     "num_of_lakes": mesa.visualization.Slider("Number of Lakes", 1, 0, 10, 1),
     "obstacles": mesa.visualization.Checkbox("Obstacles", True),
     "corridor": mesa.visualization.Checkbox("Corridor", True),
-    "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True)
+    "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True),
 }
 
 server = mesa.visualization.ModularServer(

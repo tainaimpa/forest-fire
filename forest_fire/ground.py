@@ -6,3 +6,4 @@ class Ground(Agent): # Occupies the cells without trees
         super().__init__(unique_id, model)
         self.pos = pos
         self.status = 'Ground'
+        self.burnable = False

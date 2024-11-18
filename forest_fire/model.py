@@ -21,7 +21,8 @@ class ForestFire(mesa.Model):
         num_of_lakes=1,
         obstacles=True,
         corridor=True,
-        individual_lakes=True
+        individual_lakes=True,
+        reprod_speed=1, 
     ):
         super().__init__()
         self.width = width
@@ -34,11 +35,12 @@ class ForestFire(mesa.Model):
         self.individual_lakes = individual_lakes
         self.schedule = mesa.time.RandomActivation(self)
         self.grid = mesa.space.SingleGrid(self.width, self.height, torus=False)
+        self.reprod_speed = reprod_speed 
 
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 "Fine": lambda model: self.count_type(model, "Fine"),
-                "On Fire": lambda model: self.count_type(model, "Burning"),
+                "Burning": lambda model: self.count_type(model, "Burning"),
                 "Burned": lambda model: self.count_type(model, "Burned"),
             }
         )
@@ -52,7 +54,7 @@ class ForestFire(mesa.Model):
             self._initialize_lake_organic()
         for _contents, pos in self.grid.coord_iter():
             if random.random() < self.tree_density:
-                agent = Tree(self.next_id(), self, pos)
+                agent = Tree(self.next_id(), self, pos, self.tree_density, self.reprod_speed)
                 if pos[0] == 0:  # set first column to Burning
                     agent.status = "Burning"
                 self.schedule.add(agent)
