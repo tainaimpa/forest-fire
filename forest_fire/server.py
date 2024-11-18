@@ -73,6 +73,7 @@ def agent_portrayal(agent):
 canvas_element = mesa.visualization.CanvasGrid(agent_portrayal, GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
 )
 # TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
+# TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
 tree_chart = mesa.visualization.ChartModule(
     [{"Label": label, "Color": color} for label, color in COLORS.items()]
 )
@@ -84,8 +85,12 @@ pie_chart = mesa.visualization.PieChartModule(
 model_params = {
     "rainy_season": mesa.visualization.Checkbox("Estação chuvosa", False),
     "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
+    "rainy_season": mesa.visualization.Checkbox("Estação chuvosa", False),
+    "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
+    "tree_density": mesa.visualization.Slider("Tree Density", 0.0, 0.0, 1.0, 0.01),
+    "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
     "tree_density": mesa.visualization.Slider("Tree Density", 0.0, 0.0, 1.0, 0.01),
     "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
 }

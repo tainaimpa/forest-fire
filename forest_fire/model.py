@@ -49,6 +49,11 @@ class ForestFire(mesa.Model):
             terra_agent = Terra((x, y), self, self.biome.img_path)
             self.grid.place_agent(terra_agent, (x, y))
 
+        # Inicializa o grid com terra
+        for contents, (x, y) in self.grid.coord_iter():
+            terra_agent = Terra((x, y), self, self.biome.img_path)
+            self.grid.place_agent(terra_agent, (x, y))
+
         self._initialize_trees()
         
         if rainy_season:

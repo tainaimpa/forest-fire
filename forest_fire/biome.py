@@ -1,6 +1,7 @@
 from forest_fire.stats import Stats
 
 default_size = Stats(15, 5) # Estatísticas do tamanho padrão para as árvores
+default_size = Stats(15, 5) # Estatísticas do tamanho padrão para as árvores
 
 class Biome():
     '''
@@ -17,7 +18,9 @@ class Biome():
             - temperature (float)
                 Temperatura média do bioma em Celsius.
             - size (Stats)
+            - size (Stats)
                 Tamanho da fauna em metros.
+            - color (Stats)
             - color (Stats)
                 Cor da fauna em hexadecimal.
         '''
@@ -39,9 +42,13 @@ pantanal  = Biome('pantanal', 0.50, 20, 28, Stats(20, 10), "#339966", 'forest_fi
 
 biomes = {
     "Default" : default,
+    "Default" : default,
     "Amazônia": amazonia,
     "Cerrado" : cerrado,
+    "Cerrado" : cerrado,
     "Caatinga": caatinga,
+    "Pantanal": pantanal,
+    "Mata Atlântica" : atlantica
     "Pantanal": pantanal,
     "Mata Atlântica" : atlantica
 }
