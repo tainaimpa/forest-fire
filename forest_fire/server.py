@@ -2,6 +2,8 @@ import mesa
 
 from forest_fire.model import ForestFire
 from forest_fire.tree import Tree
+from forest_fire.cloud import Cloud
+from forest_fire.fireman import Fireman
 
 GRID_WIDTH = 100
 GRID_HEIGHT = 100
@@ -12,7 +14,9 @@ COLORS = {
     "Fine": "#00AA00",
     "Burning": "#FF0000",
     "Burned": "#3D2B1F",
-    "Cloud": "#A0A0A0",  # TODO nuvens cheias mais escuras 
+    "Extinguished": "#FFFFFF",
+    "Cloud": "#A0A0A0", # TODO nuvens cheias mais escuras 
+    "Fireman": "#00A8FF" 
 }
 
 
@@ -48,10 +52,29 @@ def cloud_portrayal(cloud):
         "Color": COLORS["Cloud"],
     }
 
+def fireman_portrayal(fireman):
+    """
+    Define como o agente 'Fireman' será exibido na visualização do modelo.
+    """
+    (x, y) = fireman.pos
+    return {
+        "Shape": "circle",
+        "r": 0.5,                     
+        "Filled": True,         
+        "Layer": 1,
+        "x": x,
+        "y": y,  
+        "Color":COLORS["Fireman"],                                 
+    }
+
 
 
 canvas_element = mesa.visualization.CanvasGrid(
-    lambda agent: tree_portrayal(agent) if isinstance(agent, Tree) else cloud_portrayal(agent),
+    lambda agent: tree_portrayal(agent) if isinstance(agent, Tree) else (
+        cloud_portrayal(agent) if isinstance(agent, Cloud) else (
+            fireman_portrayal(agent) if isinstance(agent, Fireman) else default_portrayal(agent)
+        )
+    ),
     GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
 )
 # TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
@@ -70,6 +93,7 @@ model_params = {
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.0, 0.0, 1.0, 0.01),
     "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
+    "fireman_quantity": mesa.visualization.Slider("Fireman Quantity", 0, 0, 1000, 50)
 }
 
 server = mesa.visualization.ModularServer(

@@ -3,6 +3,7 @@ from typing import Literal
 from forest_fire.cloud import Cloud
 from forest_fire.tree import Tree
 from forest_fire.biome import biomes
+from forest_fire.fireman import Fireman
 
 
 class ForestFire(mesa.Model):
@@ -13,7 +14,8 @@ class ForestFire(mesa.Model):
         height=100,
         tree_density=0,
         rainy_season=False,
-        cloud_quantity=0,
+        cloud_quantity=0, 
+        fireman_quantity=0,
     ):
         super().__init__()
         self.biome = biomes[biome_name]
@@ -24,6 +26,7 @@ class ForestFire(mesa.Model):
         self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
         self.rainy_season = rainy_season
         self.cloud_quantity = cloud_quantity
+        self.fireman_quantity = fireman_quantity
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 "Fine": lambda model: self.count_type(model, "Fine"),
@@ -36,6 +39,7 @@ class ForestFire(mesa.Model):
         self._initialize_trees()
         if rainy_season:
             self._initialize_clouds(cloud_quantity)   #TODO associar a biomas 
+        self._initialize_firemen(fireman_quantity)
 
         self.datacollector.collect(self)
 
@@ -64,6 +68,17 @@ class ForestFire(mesa.Model):
             cloud = Cloud(self.next_id(), (x, y), self, size=cloud_size, color="gray", direction=direction, full=False)
             self.schedule.add(cloud)
             self.grid.place_agent(cloud, (x, y))
+    
+    def _initialize_firemen(self, fireman_quantity=0):
+        """
+        Inicializa um número especificado de bombeiros em células aleatórias.
+        """
+        for i in range(fireman_quantity):
+            x = self.random.randrange(self.grid.width)
+            y = self.random.randrange(self.grid.height)
+            fireman = Fireman(unique_id=i, model=self, pos=(x, y))
+            self.schedule.add(fireman)
+            self.grid.place_agent(fireman, (x, y))
 
     def step(self):
         """Atualiza o modelo a cada passo."""
@@ -88,5 +103,14 @@ class ForestFire(mesa.Model):
         count = 0
         for cloud in model.schedule.agents:
             if isinstance(cloud, Cloud):
+                count += 1
+        return count
+    
+    @staticmethod
+    def count_fireman(model):
+        """Conta o número de bombeiros no modelo."""
+        count = 0
+        for fireman in model.schedule.agents:
+            if isinstance(fireman, Fireman):
                 count += 1
         return count
