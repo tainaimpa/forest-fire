@@ -48,7 +48,7 @@ model_params = {
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
     "random_fire" : mesa.visualization.Checkbox("Random Fire Start", True),
-    "position_fire": mesa.visualization.Choice("Fire Start Direction",["left","right", "top", "bottom", "middle"], "left")
+    "position_fire": mesa.visualization.Choice("Fire Start Direction",["North","South", "East", "West", "Middle"], "?NSEWM")
 }
 
 server = mesa.visualization.ModularServer(
