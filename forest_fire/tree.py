@@ -105,7 +105,7 @@ class Tree(mesa.Agent):
                 elif neighbor.status == "Corridor" and neighbor.burnable:
                     neighbor.status = "Burned"
                     for neighbor_c in self.model.grid.iter_neighbors(neighbor.pos, moore=True):
-                        if neighbor_c.status == "Fine" and neighbor_c.burnable:
+                        if neighbor_c.status == "Fine" and neighbor_c.burnable:                          
                             neighbor_c.status = "Burning"
             self.status = "Burned"
             
