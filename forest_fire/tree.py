@@ -12,20 +12,20 @@ class Terra(mesa.Agent):
     O agente terra preenche todo o grid.
     Ele altera sua cor dependendo do status da árvore sobre ele.
     """
-    def __init__(self, pos, model, color: str, img_path: str = None):
+    def __init__(self, pos, model, color, img_path: str = None):
         super().__init__(pos, model)
         self.pos = pos
         self.img_path = img_path
-        self.color = "#E3966B"  # Cor padrão da terra (terra nua)
+        self.color = color  # Cor padrão da terra (terra nua)
                
     def update_color(self):
         """
         Atualiza a cor da terra de acordo com o status da árvore sobre ela.
         Se não houver árvore, usa a imagem padrão 'terra.png'.
         """
-        # Obtém os agentes na célula atual (no caso, pode haver apenas uma árvore)
+        # Obtém os agentes na célula atual
         agents_in_cell = self.model.grid.get_cell_list_contents([self.pos])
-        
+              
         # Procura por uma árvore na célula
         tree = None
         for agent in agents_in_cell:
@@ -34,7 +34,6 @@ class Terra(mesa.Agent):
                 break  # Só há uma árvore por célula, então podemos sair do loop
 
         # Se houver uma árvore, atualize a imagem/cor da terra com base no seu status
-
         if tree:
             if tree.status == "Fine":
                 # Se a árvore estiver "Fine", a terra terá a cor do bioma
@@ -47,10 +46,10 @@ class Terra(mesa.Agent):
         
         else:
             # Se não houver árvore, verificamos o bioma
-            if self.biome.name != "Default":
+            if self.model.biome.name != "Default":
                 # Se o bioma não for "Default", usamos a imagem da terra associada ao bioma
                 self.color = None  # Não usamos cor, porque vamos usar a imagem da terra
-                self.img_path = f"{self.biome.img_path}/terra.png"
+                self.img_path = f"{self.model.biome.img_path}/terra.png"
             else:
                 # Se o bioma for "Default", mantemos a cor padrão da terra
                 self.color = "#E3966B"  # Cor padrão da terra
@@ -61,7 +60,7 @@ class Terra(mesa.Agent):
         Atualiza a cor da terra a cada passo.
         """
         self.update_color()
-        
+                
 class Tree(mesa.Agent):
     """
     A árvore é um agente que pode ter diferentes estados, como 'Fine', 'Burning' ou 'Burned'.
@@ -94,17 +93,17 @@ class Tree(mesa.Agent):
             return None
         
         if self.size <= 8:
-            img_file = arvore1.png  # Imagem para árvores bem pequenas
+            img_file = 'arvore1.png'  # Imagem para árvores bem pequenas
         elif self.size <= 15:
-            img_file = arvore2.png  # Imagem para árvores pequenas
+            img_file = 'arvore2.png'  # Imagem para árvores pequenas
         elif self.size <= 30:
-            img_file = arvore3.png  # Imagem para árvores média
+            img_file = 'arvore3.png'  # Imagem para árvores média
         elif self.size <= 40:
-            img_file = arvore4.png  # Imagem para árvores grandes
+            img_file = 'arvore4.png'  # Imagem para árvores grandes
         else:
-            img_file = arvore5.png  # Imagem para árvores bem grandes
+            img_file = 'arvore5.png'  # Imagem para árvores bem grandes
 
-        return f"{self.biome.img_path}/{img_file}"#self.model.biome.img_path
+        return f"{self.model.biome.img_path}/{img_file}"#self.model.biome.img_path
 
 
 
