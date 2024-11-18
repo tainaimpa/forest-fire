@@ -1,15 +1,15 @@
 import mesa
 import random
 
-
 class Tree(mesa.Agent):
-    def __init__(self, unique_id, model, pos, tree_density, reprod_speed=1, size=10):
+    def __init__(self, unique_id, model, pos, tree_density, reprod_speed=1, size=float, color= str):
         super().__init__(unique_id, model)
         self.pos = pos
         self.status = "Fine"
         self.tree_density = tree_density
         self.reprod_speed = reprod_speed
         self.size = size
+        self.color = color
         self.CO_emission = 0
         self.CO_sequestered = 0 
         
@@ -78,7 +78,7 @@ class Tree(mesa.Agent):
     def step(self):
         if self.status == "Burning":
             for neighbor in self.model.grid.iter_neighbors(self.pos, True):
-                if neighbor.status == "Fine":
+                if isinstance(neighbor, Tree) and neighbor.status == "Fine":
                     neighbor.status = "Burning"
             # Cálculo de CO2 emitido na queima da árvore
             self.CO_emission = self.size * 20 * 0.5 * 3.67 # Biomassa x 0.5 x 3.67
