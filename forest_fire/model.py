@@ -39,9 +39,9 @@ class ForestFire(mesa.Model):
 
         self.datacollector = mesa.DataCollector(
             model_reporters={
-                "Fine": lambda model: self.count_type(model, "Fine"),
-                "Burning": lambda model: self.count_type(model, "Burning"),
-                "Burned": lambda model: self.count_type(model, "Burned"),
+                "Fine": lambda model: ForestFire.count_type(model, "Fine", Tree),
+                "Burning": lambda model: ForestFire.count_type(model, "Burning", Tree),
+                "Burned": lambda model: ForestFire.count_type(model, "Burned", Tree),
             }
         )
 
@@ -153,9 +153,10 @@ class ForestFire(mesa.Model):
         self.datacollector.collect(self)
 
     @staticmethod
-    def count_type(model, status):
+    def count_type(model, status=None, agent_type=None):
         count = 0
-        for tree in model.schedule.agents:
-            if tree.status == status:
-                count += 1
+        for agent in model.schedule.agents:
+            if not agent_type or isinstance(agent, agent_type):
+                if not status or agent.status == status:
+                    count += 1
         return count

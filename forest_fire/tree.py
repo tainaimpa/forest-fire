@@ -54,7 +54,7 @@ class Tree(mesa.Agent):
         if isinstance(cord, Ground) or (isinstance(cord, Tree) and cord.status == 'Burned'):
             n_first_level_neighbors, n_second_level_neighbors, n_first_level_trees, n_second_level_trees = self.bfs(cord.pos)
             # A escolha desse return se dá para tentar restringir as limitações de estarmos tratando com inteiros
-            return (n_first_level_trees + n_second_level_trees < self.tree_density * (n_first_level_neighbors + n_second_level_neighbors))
+            return ((n_first_level_trees + n_second_level_trees) < (self.tree_density * (n_first_level_neighbors + n_second_level_neighbors) * 0.9))
         return False
 
     def tree_reproduction(self):
@@ -67,8 +67,7 @@ class Tree(mesa.Agent):
         neighbors_number = n_first_level_neighbors + n_second_level_neighbors + 1 
         if (n_trees) >= self.tree_density * neighbors_number:
             return
-        expected_trees = (neighbors_number *
-                            self.tree_density) - n_trees
+        expected_trees = (neighbors_number * self.tree_density) - n_trees
         n1_reproduction_rate = (
             expected_trees/(n_first_level_neighbors * neighbors_number))*self.reprod_speed
         n2_reproduction_rate = (
