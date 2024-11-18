@@ -17,7 +17,9 @@ class Biome():
             - temperature (float)
                 Temperatura média do bioma em Celsius.
             - size (Stats)
+            - size (Stats)
                 Tamanho da fauna em metros.
+            - color (Stats)
             - color (Stats)
                 Cor da fauna em hexadecimal.
         '''

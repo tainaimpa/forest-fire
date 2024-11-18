@@ -12,9 +12,6 @@ CANVAS_HEIGHT = 500
 
 # Definindo as cores baseadas no status das árvores
 COLORS = {
-    "Fine": "#00AA00",
-    "Burning": "#FF0000",
-    "Burned": "#3D2B1F",
     "Cloud": "#A0A0A0",  # TODO nuvens cheias mais escuras 
 }
 
@@ -32,37 +29,38 @@ def agent_portrayal(agent):
     x, y = agent.pos
 
     if type(agent) is Terra:
-        # Verifica se há uma árvore diretamente sobre a terra
-        tree_in_cell = agent.model.get_agents_of_type(Tree)
-        
-        shape = "rect" if tree_in_cell else "forest_fire/images/cerrado/terra.png"
-        color =  "#E3966B" if tree_in_cell else "#3D2B1F"
-      
-        return {"x" : x,
-                "y" : y,
-                "w" : 1,
-                "h" : 1,
-                "Layer" : 0,
-                "Filled": True,
-                "Shape": shape,
-                "Color": color}
+         # A cor e a imagem da Terra já são gerenciadas pela classe Terra
+        # A função update_color() é chamada no método step() de Terra
+        shape = agent.img_path if agent.img_path   else "rect"
+        return {
+            "x": x,
+            "y": y,
+            "w": 1,
+            "h": 1,
+            "Layer": 0,
+            "Filled": True,
+            "Shape": shape,  # Forma da Terra (imagem ou retângulo)
+            "Image_File": shape,
+            "Color": agent.color if agent.color else "#3D2B1F",  # Cor da Terra
+        }
 
-    elif type(agent) is Tree:
+    if type(agent) is Tree:
         
         image = agent.get_image()
         shape = image if image else 'rect'
-
+        
         return {"x" : x,
                 "y" : y,
                 "w" : 1,
                 "h" : 1,
                 "Layer" : 1,
-                "Scale" : 1.1,
+                "Scale" : 1,
                 "Filled": True,
                 "Shape": shape,
-                "Color": COLORS.get(agent.status, "#E3966B")}
+                "Image_File": shape, 
+                "Color": agent.color if agent.color else "#00AA00" }
 
-    elif type(agent) is Cloud:
+    if type(agent) is Cloud:
             return {
         "Shape": "circle",
         "r": agent.size,  
@@ -74,6 +72,7 @@ def agent_portrayal(agent):
 
 canvas_element = mesa.visualization.CanvasGrid(agent_portrayal, GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
 )
+# TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
 # TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
 tree_chart = mesa.visualization.ChartModule(
     [{"Label": label, "Color": color} for label, color in COLORS.items()]
