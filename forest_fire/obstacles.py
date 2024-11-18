@@ -1,5 +1,6 @@
 from mesa import Agent
 
+from forest_fire.ground import Ground
 
 class Obstacle(Agent): # Create a general obstacle
     def __init__(self, unique_id, model, pos):
@@ -33,3 +34,12 @@ class Corridor(Obstacle):
         self.burnable = True
         self.spread_rate = 2.0
         self.status = "Corridor"
+        
+    def step(self):
+        if self.status == "Burned":
+            pos = self.pos
+            self.model.grid.remove_agent(self)
+            self.model.schedule.remove(self)
+            ground = Ground(self.model.next_id(), self.model, pos)
+            self.model.grid.place_agent(ground, pos)
+            self.model.schedule.add(ground)
