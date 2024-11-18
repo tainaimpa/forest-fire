@@ -83,12 +83,9 @@ class Cloud(SmoothWalker):
     def check_and_merge(self):
         """Verifica se há nuvens próximas e as funde em uma única nuvem maior."""
         if self.pos is not None:
-            clouds_in_range = self.model.grid.get_neighbors(self.pos, moore=True)
-            for neighbor in clouds_in_range:
-                if isinstance(neighbor, Cloud) and neighbor != self:
-                    if self.size < neighbor.size:
-                        self.size = neighbor.size
-                    self.size += 1  
-                    self.full = self.size > 3 #TODO ajustar  
+            for neighbor in self.model.grid.get_neighbors(self.pos, moore=True):
+                if type(neighbor) is Cloud:
+                    self.size += neighbor.size
+                    self.full = self.size >= size_to_rain 
                     self.model.grid.remove_agent(neighbor)  
                     self.model.schedule.remove(neighbor)    
