@@ -25,7 +25,25 @@ class Biome():
         self.temperature = temperature
         self.CO2_emission_factor = CO2_emission_factor
         self.size = size
-        self.color = color # ajustar as cores 
+        self.color = color # ajustar as cores
+        self.humidity_loss_per_tree = 0.108 * (self.temperature / 30) * (self.density / 0.5)
+
+    def calculate_final_humidity(self, num_arvores_queimadas):
+        """
+        Calcula a umidade final do bioma após a queima de um número específico de árvores.
+        :param num_arvores_queimadas: Número de árvores queimadas durante o incêndio.
+        :return: A umidade final do bioma.
+        """
+        # Calcula a perda total de umidade
+        total_lost = self.loss_per_tree() * num_arvores_queimadas
+        # Calcula a umidade final do bioma após o incêndio
+        final_humidity = self.humidity - total_lost
+
+        # Evita que a umidade se torne negativa
+        if final_humidity < 0:
+            final_humidity = 0
+
+        return final_humidity
         
 
 default   = Biome(0.65, 15, 26, 1.0)
