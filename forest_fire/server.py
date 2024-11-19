@@ -13,10 +13,10 @@ COLORS = {
     "Fine": "#148c39", #green
     "Burning": "#cf0f0f", #red
     "Burned": "#3D2B1F", #black
-    "Lake": "#4a8be8", #blue
-    "Corridor": "orange",
-    "Obstacle": "#7e53a7",
-    "Ground": "#dcc9a4", #ligth earthy color
+    "Lake": "#3A77F0", #blue
+    "Corridor": "#8FBF3C",
+    "Obstacle": "#6E6E6E",
+    "Ground": "#8E5E30", #ligth earthy color
     "Cloud": "#A0A0A0",  # TODO nuvens cheias mais escuras 
 }
 
@@ -73,7 +73,7 @@ model_params = {
     "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
-    "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
+    "tree_density": mesa.visualization.Slider("Tree Density", 0, 0, 1.0, 0.01, description="If the value is 0, the biome density will be used."),
     "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
     "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.1), 
     "water_density": mesa.visualization.Slider("Water Density", 0.15, 0, 1.0, 0.01),
