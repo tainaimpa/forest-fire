@@ -74,8 +74,10 @@ class ForestFire(mesa.Model):
                 self.schedule.add(agent)
                 if self.grid.is_cell_empty(pos):
                     self.grid.place_agent(agent, pos)
+                    
             elif self.individual_lakes and random.random() < self.water_density**2:
                 self._initialize_water(pos)
+                
             else:
                 self._initialize_other_agent(pos)
                     
