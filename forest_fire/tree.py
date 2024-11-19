@@ -103,7 +103,14 @@ class Tree(mesa.Agent):
         else:
             img_file = 'arvore5.png'  # Imagem para árvores bem grandes
 
-        return f"{self.model.biome.img_path}/{img_file}"#self.model.biome.img_path
+        image= f"{self.model.biome.img_path}/{img_file}"#self.model.biome.img_path
+
+        # Adicione um print para depurar
+        print(f"Image Path for Tree: {image}")  
+        
+        return image
+
+
 
 
 

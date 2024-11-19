@@ -33,11 +33,11 @@ class Biome():
         
 
 default   = Biome('default', 0.65, 15, 26,)
-amazonia  = Biome('amazonia', 0.83, 25, 27, Stats(40, 10), "#009933", 'forest_fire/images/amazonia') 
-atlantica = Biome('atlantica', 0.80, 20, 26, Stats(35,  5), "#00AA00", 'forest_fire/images/atlantica')
-cerrado   = Biome('cerrado', 0.25, 10, 28, Stats(10,  5), "#67B921", 'forest_fire/images/cerrado')
-caatinga  = Biome('caatinga', 0.08,  6, 39, Stats( 6,  2), "#cccc00", 'forest_fire/images/caatinga')  
-pantanal  = Biome('pantanal', 0.50, 20, 28, Stats(20, 10), "#339966", 'forest_fire/images/pantanal')
+amazonia  = Biome('amazonia', 0.83, 25, 27, Stats(40, 10), "#009933", 'forest_fire/static/images/amazonia') 
+atlantica = Biome('atlantica', 0.80, 20, 26, Stats(35,  5), "#00AA00", 'forest_fire/static/images/atlantica')
+cerrado   = Biome('cerrado', 0.25, 10, 28, Stats(10,  5), "#67B921", 'forest_fire/static/images/cerrado')
+caatinga  = Biome('caatinga', 0.08,  6, 39, Stats( 6,  2), "#cccc00", 'forest_fire/static/images/caatinga')  
+pantanal  = Biome('pantanal', 0.50, 20, 28, Stats(20, 10), "#339966", 'forest_fire/static/images/pantanal')
 
 biomes = {
     "Default" : default,
