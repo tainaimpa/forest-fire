@@ -4,13 +4,17 @@ from forest_fire.model import ForestFire
 
 GRID_WIDTH = 100
 GRID_HEIGHT = 100
-CANVAS_WIDTH = 500
-CANVAS_HEIGHT = 500
+CANVAS_WIDTH = 750
+CANVAS_HEIGHT = 750
 
 COLORS = {
-    "Fine": "#00AA00",
-    "Burning": "#FF0000",
-    "Burned": "#3D2B1F",
+    "Fine": "#148c39", #green
+    "Burning": "#cf0f0f", #red
+    "Burned": "#3D2B1F", #black
+    "Lake": "#4a8be8", #blue
+    "Corridor": "orange",
+    "Obstacle": "#7e53a7",
+    "Ground": "#dcc9a4" #ligth earthy color
 }
 
 
@@ -36,18 +40,23 @@ canvas_element = mesa.visualization.CanvasGrid(
 )
 
 tree_chart = mesa.visualization.ChartModule(
-    [{"Label": label, "Color": color} for (label, color) in COLORS.items()]
+    [{"Label": label, "Color": color} for (label, color) in COLORS.items() if label in ["Fine", "Burning", "Burned"]]
 )
 
 pie_chart = mesa.visualization.PieChartModule(
-    [{"Label": label, "Color": color} for (label, color) in COLORS.items()]
+    [{"Label": label, "Color": color} for (label, color) in COLORS.items() if label in ["Fine", "Burning", "Burned"]]
 )
 
 model_params = {
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
-    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.1) 
+    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.1), 
+    "water_density": mesa.visualization.Slider("Water Density", 0.15, 0, 1.0, 0.01),
+    "num_of_lakes": mesa.visualization.Slider("Number of Lakes", 1, 0, 10, 1),
+    "obstacles": mesa.visualization.Checkbox("Obstacles", True),
+    "corridor": mesa.visualization.Checkbox("Corridor", True),
+    "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True),
 }
 
 server = mesa.visualization.ModularServer(
