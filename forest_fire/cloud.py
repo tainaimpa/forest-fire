@@ -12,7 +12,8 @@ class SmoothWalker(mesa.Agent):
         self.pos = pos
         self.size = size
         self.direction = direction  
-        self.change_rate = change_rate 
+        self.change_rate = change_rate
+        self.status = "Cloud"
 
     def random_move(self):
         """Move o agente suavemente na direção atual."""
@@ -86,6 +87,6 @@ class Cloud(SmoothWalker):
             for neighbor in self.model.grid.get_neighbors(self.pos, moore=True):
                 if type(neighbor) is Cloud:
                     self.size += neighbor.size
-                    self.full = self.size >= size_to_rain 
+                    # self.full = self.size >= size_to_rain 
                     self.model.grid.remove_agent(neighbor)  
                     self.model.schedule.remove(neighbor)    
