@@ -42,7 +42,7 @@ def cloud_portrayal(cloud):
         "Shape": "circle",
         "r": cloud.size,  
         "Filled": True,
-        "Layer": 1,
+        "Layer": 20,
         "x": x,
         "y": y,
         "Color": COLORS["Cloud"],
