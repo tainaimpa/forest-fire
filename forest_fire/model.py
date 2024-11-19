@@ -3,17 +3,33 @@ from typing import Literal
 from forest_fire.cloud import Cloud
 from forest_fire.tree import Tree, Terra
 from forest_fire.biome import biomes
+from forest_fire.obstacles import Lake, Corridor, Obstacle
+from forest_fire.ground import Ground
+from mesa import Model
+from mesa.time import RandomActivation
+from mesa.space import MultiGrid
+import random
+import numpy as np
+from scipy import ndimage
 
 class ForestFire(mesa.Model):
     def __init__(
         self,
-        biome_name: str, 
-        width=30,
-        height=30,
-        tree_density=0,
+        biome_name: Literal["Default"], 
+        width=100,
+        height=100,
         rainy_season=False,
         imagens=False,
         cloud_quantity=0,
+        tree_density=0.65,
+        water_density=0.15,
+        num_of_lakes=1,
+        corridor_density=0.15,
+        obstacles_density=0.15,
+        obstacles=True,
+        corridor=True,
+        individual_lakes=True,
+        reprod_speed=1, 
     ):
         super().__init__()
 
@@ -22,17 +38,20 @@ class ForestFire(mesa.Model):
         self.width = width
         self.height = height
         self.tree_density = self.biome.density if tree_density == 0 else tree_density
-
-        # Agendamento de eventos
-        self.schedule = mesa.time.RandomActivation(self)
-        
-        # Cria o grid de árvores
-        self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
-        self.imagens = imagens
         self.rainy_season = rainy_season
         self.cloud_quantity = cloud_quantity
-
-        # Inicializa o coletor de dados
+        self.reprod_speed = reprod_speed
+        self.water_density = water_density
+        self.num_of_lakes = num_of_lakes
+        self.corridor_density = corridor_density
+        self.obstacles_density = obstacles_density
+        self.obstacles = obstacles
+        self.corridor = corridor
+        self.individual_lakes = individual_lakes
+        
+        self.schedule = mesa.time.RandomActivation(self)
+        self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
+        
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 "Fine": lambda model: self.count_type(model, "Fine", agent_type=Tree),
@@ -60,27 +79,102 @@ class ForestFire(mesa.Model):
         self.datacollector.collect(self)
 
     def _initialize_trees(self):
-        """
-        Inicializa as árvores no grid com status e características de acordo com o bioma.
-        Algumas árvores começam com o status "Burning".
-        """
+        for _ in range(self.num_of_lakes):
+            self._initialize_lake_organic()
         for _contents, pos in self.grid.coord_iter():
-            size = self.biome.size.sort_value()  # Tamanho da árvore conforme o bioma
+            size = self.biome.size.sort_value() # Tamanho da árvore conforme o bioma
             color = self.biome.tree_color  # Cor do bioma para a árvore
-            img_path = self.biome.img_path
-            tree = Tree(self.next_id(), self, pos, size, color, img_path)
-
-            # Determina se a árvore vai ser plantada com fogo ou não TODO definir outro critério
+            img_path = self.biome.img_path # Diretório das imagens do bioma
+            
             if self.random.random() < self.tree_density:
-                self.schedule.add(tree)
-                self.grid.place_agent(tree, pos)
-                # Adiciona fogo em uma árvore na primeira linha ou posição aleatória
-                if pos[0] == 0 and self.random.random() < 0.1:
-                    tree.status = "Burning"
-                else:
-                    tree.status = "Fine"
+                agent = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
+                if pos[0] == 0:  # set first column to Burning
+                    agent.status = "Burning"
+                
+                lakes_in_cell = self.get_cell_items([pos], [Lake])
+                if len(lakes_in_cell) == 0:
+                    self.grid.place_agent(agent, pos)
+                    self.schedule.add(agent)
+                
+            elif self.individual_lakes and random.random() < self.water_density**2:
+                self._initialize_water(pos)
+                
             else:
-                tree.status = "Burned"  # Algumas árvores começam como "Burned"
+                self._initialize_other_agent(pos)
+                    
+    def _initialize_other_agent(self, pos):
+        def get_types_and_weights():
+            none_weight = max(1-self.corridor_density-self.obstacles_density, 0)
+            types = ["None", "Corridor", "Obstacle"]
+            weights_list = [none_weight, self.corridor_density, self.obstacles_density]
+            if not self.obstacles:
+                types.remove("Obstacle")
+                weights_list.pop()
+            if not self.corridor:
+                types.remove("Corridor")
+                weights_list.pop()
+            return types, weights_list
+            
+        types, weights_list = get_types_and_weights()
+            
+        agent_type = random.choices(types, weights=weights_list)[0]
+        match agent_type:
+            case "Corridor":
+                self._initialize_corridor(pos)
+            case "Obstacle":
+                self._initialize_obstacle(pos)
+            case "None":
+                 pass
+            
+    def _initialize_water(self, pos):
+        water = Lake(self.next_id(), self, pos)
+        self.grid.place_agent(water, pos)
+        self.schedule.add(water)
+            
+    def _initialize_lake(self):
+        self.lake_size = int(self.water_density*50)
+        x, y = random.randint(0, self.width - 1), random.randint(0, self.height - 1)
+        center_lake = Lake(self.next_id(), self, (x, y))
+        self.schedule.add(center_lake)
+        self.grid.place_agent(center_lake, (x,y))
+        
+        for pos in self.grid.iter_neighborhood((x,y), moore=True, radius=self.lake_size):
+            lake = Lake(self.next_id(), self, pos)
+            self.schedule.add(lake)
+            self.grid.place_agent(lake, pos)
+
+    def _initialize_lake_organic(self):
+        self.lake_size = int(self.water_density * 50)
+        x, y = random.randint(0, self.width - 1), random.randint(0, self.height - 1)
+        center_lake = Lake(self.next_id(), self, (x, y))
+        self.schedule.add(center_lake)
+        self.grid.place_agent(center_lake, (x, y))
+
+        # Generate noise field using NumPy
+        noise_scale = 0.1
+        shape = (self.width, self.height)
+        noise_field = np.random.randn(*shape) * noise_scale
+
+        # Apply smoothing (optional)
+        smoothed_noise = ndimage.convolve(noise_field, np.ones((3, 3)) / 9, mode='reflect')
+
+        # Iterate through neighborhood and add lake cells based on noise
+        for pos in self.grid.iter_neighborhood((x, y), moore=False, radius=self.lake_size):
+            noise_value = smoothed_noise[pos[1]][pos[0]]
+            if noise_value > 1e-15:  # Adjust threshold for desired lake shape
+                lake = Lake(self.next_id(), self, pos)
+                self.grid.place_agent(lake, pos)           
+                self.schedule.add(lake)
+
+    def _initialize_obstacle(self, pos):
+        obstacle = Obstacle(self.next_id(), self, pos)
+        self.schedule.add(obstacle)
+        self.grid.place_agent(obstacle, pos)
+    
+    def _initialize_corridor(self, pos):
+        corridor = Corridor(self.next_id(), self, pos)
+        self.schedule.add(corridor)
+        self.grid.place_agent(corridor, pos)
 
     def _initialize_clouds(self, cloud_count):
         """Inicializa nuvens no grid com tamanhos e posições aleatórias."""
@@ -93,6 +187,16 @@ class ForestFire(mesa.Model):
             cloud = Cloud(self.next_id(), (x, y), self, size=cloud_size, color="gray", direction=direction, full=False)
             self.schedule.add(cloud)
             self.grid.place_agent(cloud, (x, y))
+            
+    def get_cell_items(self, positions: list, types: list):
+        agents_in_cell = self.grid.get_cell_list_contents(positions)
+              
+        filtered_agents = []
+        for agent in agents_in_cell:
+            for tp in types:
+                if isinstance(agent, tp):
+                    filtered_agents.append(agent)
+        return filtered_agents
 
     def step(self):
         """
@@ -105,13 +209,6 @@ class ForestFire(mesa.Model):
         # Adiciona novas nuvens com tamanhos variados a cada 10 passos
         if self.rainy_season and self.schedule.steps % 10 == 0:
             self._initialize_clouds(5)  # Adiciona 5 novas nuvens a cada 10 passos
-            
-    # pq não usar direto?
-    def get_neighbors(self, pos, include_center=False):
-        """
-        Função que retorna os vizinhos de uma posição (posição do agente no grid).
-        """
-        return self.grid.get_neighbors(pos, include_center)
     
     @staticmethod
     def count_type(model, status=None, agent_type=None):

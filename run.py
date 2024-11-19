@@ -1,3 +1,4 @@
 from forest_fire.server import server
 
-server.launch(open_browser=True)
+if __name__ == "__main__":
+    server.launch()
