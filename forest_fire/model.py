@@ -4,10 +4,6 @@ from forest_fire.cloud import Cloud
 from forest_fire.tree import Tree, Terra
 from forest_fire.biome import biomes
 from forest_fire.obstacles import Lake, Corridor, Obstacle
-from forest_fire.ground import Ground
-from mesa import Model
-from mesa.time import RandomActivation
-from mesa.space import MultiGrid
 import random
 import numpy as np
 from scipy import ndimage

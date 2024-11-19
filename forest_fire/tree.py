@@ -2,7 +2,6 @@ import mesa
 import random
 
 from forest_fire.obstacles import Lake, Corridor, Obstacle, Puddle
-from forest_fire.ground import Ground
 
 # Dicionário de cores para cada status da árvore
 COLORS = {
