@@ -46,7 +46,9 @@ class ForestFire(mesa.Model):
 
         # Inicializa o grid com terra
         for contents, (x, y) in self.grid.coord_iter():
-            terra_agent = Terra((x, y), self, self.biome.img_path)
+            color = self.biome.ground_color
+            img_path = self.biome.img_path
+            terra_agent = Terra((x, y), self, color, img_path)
             self.grid.place_agent(terra_agent, (x, y))
 
         self._initialize_trees()
@@ -64,8 +66,9 @@ class ForestFire(mesa.Model):
         """
         for _contents, pos in self.grid.coord_iter():
             size = self.biome.size.sort_value()  # Tamanho da árvore conforme o bioma
-            color = self.biome.color  # Cor do bioma para a árvore
-            tree = Tree(self.next_id(), self, pos, size, color)
+            color = self.biome.tree_color  # Cor do bioma para a árvore
+            img_path = self.biome.img_path
+            tree = Tree(self.next_id(), self, pos, size, color, img_path)
 
             # Determina se a árvore vai ser plantada com fogo ou não TODO definir outro critério
             if self.random.random() < self.tree_density:
