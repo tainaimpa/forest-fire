@@ -35,6 +35,7 @@ class Tree(mesa.Agent):
         n_first_level_trees = 0
         n_second_level_trees = 0
         visited_cells = set()
+        
         for neighbor1 in self.model.grid.iter_neighbors(cord, True):
             if neighbor1 not in visited_cells:
                 visited_cells.add(neighbor1)
