@@ -87,6 +87,6 @@ class Cloud(SmoothWalker):
             for neighbor in self.model.grid.get_neighbors(self.pos, moore=True):
                 if type(neighbor) is Cloud:
                     self.size += neighbor.size
-                    # self.full = self.size >= size_to_rain 
+                    self.full = self.size >= 4
                     self.model.grid.remove_agent(neighbor)  
                     self.model.schedule.remove(neighbor)    
