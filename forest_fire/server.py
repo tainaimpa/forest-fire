@@ -1,5 +1,4 @@
 import mesa
-
 from forest_fire.model import ForestFire
 
 GRID_WIDTH = 100
@@ -47,8 +46,8 @@ model_params = {
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
     "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
-    "random_fire" : mesa.visualization.Checkbox("Random Fire Start", True),
-    "position_fire": mesa.visualization.Choice("Fire Start Direction",["left","right", "top", "bottom", "middle"], "left")
+    "wind_direction": mesa.visualization.Choice("Wind Direction", "N", ["N", "S", "E", "W"]),
+    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0.5, 0.0, 1.0, 0.1),
 }
 
 server = mesa.visualization.ModularServer(
