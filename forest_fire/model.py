@@ -18,6 +18,8 @@ class ForestFire(mesa.Model):
         imagens=False,
         cloud_quantity=0,
         tree_density=0.65,
+        random_fire = True,
+        position_fire = "Top",
         water_density=0.15,
         num_of_lakes=1,
         corridor_density=0.15,
@@ -33,6 +35,9 @@ class ForestFire(mesa.Model):
         self.biome = biomes[biome_name]
         self.width = width
         self.height = height
+        self.tree_density = tree_density
+        self.random_fire = random_fire
+        self.position_fire = position_fire 
         self.tree_density = self.biome.density if tree_density == 0 else tree_density
         self.rainy_season = rainy_season
         self.cloud_quantity = cloud_quantity
@@ -75,8 +80,28 @@ class ForestFire(mesa.Model):
         self.datacollector.collect(self)
 
     def _initialize_trees(self):
+        fire_list = [] 
+
+        if self.random_fire:
+            g = self.random.randint(1, 7)
+            for _ in range(g):
+                fire_list.append((self.random.randint(0, self.width-1),
+                                self.random.randint(0, self.height-1)))
+        else:
+            if self.position_fire == "Left":
+                fire_list = [(0, y) for y in range(self.height-1)]
+            elif self.position_fire == "Right":
+                fire_list = [(self.width - 1, y) for y in range(self.height-1)]
+            elif self.position_fire == "Bottom":
+                fire_list = [(x, 0) for x in range(self.width-1)]
+            elif self.position_fire == "Top":
+                fire_list = [(x, self.height - 1) for x in range(self.width-1)]
+            elif self.position_fire == "Middle":
+                fire_list = [(x, y) for x in range(self.width//2-5,self.width//2+5) for y in range(self.height//2-5, self.height//2+5)]
+
         for _ in range(self.num_of_lakes):
             self._initialize_lake_organic()
+
         for _contents, pos in self.grid.coord_iter():
             size = self.biome.size.sort_value() # Tamanho da árvore conforme o bioma
             color = self.biome.tree_color  # Cor do bioma para a árvore
@@ -84,7 +109,7 @@ class ForestFire(mesa.Model):
             
             if self.random.random() < self.tree_density:
                 agent = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
-                if pos[0] == 0:  # set first column to Burning
+                if agent.pos in fire_list:   
                     agent.status = "Burning"
                 
                 lakes_in_cell = self.get_cell_items([pos], [Lake])
