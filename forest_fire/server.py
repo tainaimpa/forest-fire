@@ -1,5 +1,4 @@
 import mesa
-import mesa.visualization
 from forest_fire.model import ForestFire
 from forest_fire.tree import Tree, Terra
 from forest_fire.obstacles import Obstacle, Corridor, Puddle, Lake
@@ -144,6 +143,8 @@ model_params = {
     "obstacles": mesa.visualization.Checkbox("Obstacles", True),
     "corridor": mesa.visualization.Checkbox("Corridor", True),
     "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True),
+    "wind_direction": mesa.visualization.Choice("Wind Direction", "N", ["N", "S", "E", "W"]),
+    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0.5, 0.0, 1.0, 0.1),
 }
 
 server = mesa.visualization.ModularServer(
