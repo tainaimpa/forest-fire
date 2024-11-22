@@ -134,7 +134,9 @@ model_params = {
     "random_fire" : mesa.visualization.Checkbox("Random Fire Start", True),
     "position_fire": mesa.visualization.Choice("Fire Start Direction","Top", ["Top", "Bottom", "Left", "Right", "Middle"]),
     "tree_density": mesa.visualization.Slider("Tree Density", 0, 0, 1.0, 0.01, description="If the value is 0, the biome density will be used."),
-    "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
+    "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1, description="") ,
+    "cloud_step": mesa.visualization.Slider("Cloud Step", 1, 1, 30, 1,description=""),
+
     "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.1), 
     "water_density": mesa.visualization.Slider("Water Density", 0.15, 0, 1.0, 0.01),
     "num_of_lakes": mesa.visualization.Slider("Number of Lakes", 1, 0, 10, 1), 
