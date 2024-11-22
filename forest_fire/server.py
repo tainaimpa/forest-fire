@@ -1,5 +1,4 @@
 import mesa
-import mesa.visualization
 from forest_fire.model import ForestFire
 from forest_fire.tree import Tree, Terra
 from forest_fire.obstacles import Obstacle, Corridor, Puddle, Lake
@@ -137,6 +136,9 @@ model_params = {
     "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
+    "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
+    "random_fire" : mesa.visualization.Checkbox("Random Fire Start", True),
+    "position_fire": mesa.visualization.Choice("Fire Start Direction","Top", ["Top", "Bottom", "Left", "Right", "Middle"]),
     "tree_density": mesa.visualization.Slider("Tree Density", 0, 0, 1.0, 0.01, description="If the value is 0, the biome density will be used."),
     "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
     "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.1), 
@@ -147,6 +149,8 @@ model_params = {
     "obstacles": mesa.visualization.Checkbox("Obstacles", True),
     "corridor": mesa.visualization.Checkbox("Corridor", True),
     "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True),
+    "wind_direction": mesa.visualization.Choice("Wind Direction", "N", ["N", "S", "E", "W"]),
+    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0.5, 0.0, 1.0, 0.1),
 }
 
 server = mesa.visualization.ModularServer(

@@ -183,4 +183,3 @@ class Tree(mesa.Agent):
         print(f"Image Path for Tree: {image}")  
         
         return image
-    
