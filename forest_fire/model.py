@@ -57,6 +57,8 @@ class ForestFire(mesa.Model):
         self.schedule = mesa.time.RandomActivation(self)
         self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
         
+        self.num_fine_trees = 0
+        
         self.datacollector = mesa.DataCollector(
             model_reporters={
                 "Fine": lambda model: self.count_type(model, "Fine", agent_type=Tree),
@@ -115,6 +117,8 @@ class ForestFire(mesa.Model):
                 agent = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
                 if agent.pos in fire_list:   
                     agent.status = "Burning"
+                else:
+                    self.num_fine_trees += 1
                 
                 lakes_in_cell = self.get_cell_items([pos], [Lake])
                 if len(lakes_in_cell) == 0:
@@ -252,9 +256,11 @@ class ForestFire(mesa.Model):
                 if (dx, dy) == self._get_wind_vector():
                     if random.randint(0, 100) > beta:
                         neighbor.status = "Burning"
+                        self.num_fine_trees -= 1
                 else:
                     if random.randint(0, 100) > alpha:
                         neighbor.status = "Burning"
+                        self.num_fine_trees -= 1
 
         agent.status = "Burned"
 

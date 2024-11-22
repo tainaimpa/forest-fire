@@ -135,7 +135,7 @@ model_params = {
     "position_fire": mesa.visualization.Choice("Fire Start Direction","Top", ["Top", "Bottom", "Left", "Right", "Middle"]),
     "tree_density": mesa.visualization.Slider("Tree Density", 0, 0, 1.0, 0.01, description="If the value is 0, the biome density will be used."),
     "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
-    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.1), 
+    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 0.3, 0.0, 1.0, 0.1), 
     "water_density": mesa.visualization.Slider("Water Density", 0.15, 0, 1.0, 0.01),
     "num_of_lakes": mesa.visualization.Slider("Number of Lakes", 1, 0, 10, 1), 
     "corridor_density": mesa.visualization.Slider("Corridor Density", 0.15, 0, 1.0, 0.01), 
@@ -144,7 +144,7 @@ model_params = {
     "corridor": mesa.visualization.Checkbox("Corridor", True),
     "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True),
     "wind_direction": mesa.visualization.Choice("Wind Direction", "N", ["N", "S", "E", "W"]),
-    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0.5, 0.0, 1.0, 0.1),
+    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0, 0.0, 1.0, 0.1),
 }
 
 server = mesa.visualization.ModularServer(
