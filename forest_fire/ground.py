@@ -18,9 +18,3 @@ class Terra(Agent):
     
     def step(self):
         pass
-
-class Ground(Terra): # Occupies the cells without trees
-    def __init__(self, unique_id, model, pos):
-        super().__init__(pos, model, "#6B4423")
-        self.pos = pos
-        self.status = 'Ground'

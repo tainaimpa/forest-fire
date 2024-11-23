@@ -94,7 +94,7 @@ class Tree(mesa.Agent):
                 for agent in cell_agents:
                     if random.uniform(0, 1) < n1_reprod_rate and self.can_grow(agent):
                         self.grow_tree(agent)                
-                    # Transforma todas as árvores vizinhas queimadas em ground
+                    # Transforma todas as árvores vizinhas queimadas em terra
                     elif isinstance(agent, Tree) and agent.status == 'Burned':
                         self.remove_burned_tree(agent)
         
@@ -106,7 +106,7 @@ class Tree(mesa.Agent):
                 for agent in cell_agents:
                     if random.uniform(0, 1) < n2_reprod_rate and self.can_grow(agent):
                         self.grow_tree(agent)
-                    # Transforma todas as árvores vizinhas queimadas em ground
+                    # Transforma todas as árvores vizinhas queimadas em terra
                     elif isinstance(agent, Tree) and agent.status == 'Burned':
                         self.remove_burned_tree(agent)
                         
