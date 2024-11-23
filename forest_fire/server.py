@@ -137,7 +137,6 @@ model_params = {
     "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
-    "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
     "random_fire" : mesa.visualization.Checkbox("Random Fire Start", True),
     "position_fire": mesa.visualization.Choice("Fire Start Direction","Top", ["Top", "Bottom", "Left", "Right", "Middle"]),
     "tree_density": mesa.visualization.Slider("Tree Density", 0, 0, 1.0, 0.01, description="If the value is 0, the biome density will be used."),
@@ -145,16 +144,16 @@ model_params = {
     "cloud_step": mesa.visualization.Slider("Clouds Step", 15, 1, 30, 1,description="number of steps until new clouds are initialized"),
     'clouds_per_step':mesa.visualization.Slider("Clouds per Step", 3, 0, 10, 1,description="number of clouds initialized during the simulation"),
     'clouds_size':mesa.visualization.Slider("size of clouds", 3, 0, 10, 1,description="size of clouds initialized"),
-    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 1, 0.0, 1.0, 0.01), 
+    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 0.3, 0.0, 1.0, 0.01), 
     "water_density": mesa.visualization.Slider("Water Density", 0.15, 0, 1.0, 0.01),
     "num_of_lakes": mesa.visualization.Slider("Number of Lakes", 1, 0, 10, 1), 
     "corridor_density": mesa.visualization.Slider("Corridor Density", 0.15, 0, 1.0, 0.01), 
     "obstacles_density": mesa.visualization.Slider("Obstacles Density", 0.15, 0, 1.0, 0.01),
     "obstacles": mesa.visualization.Checkbox("Obstacles", True),
-    "obstacles": mesa.visualization.Checkbox("Corridor", True),
+    "corridor": mesa.visualization.Checkbox("Corridor", True),
     "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True),
     "wind_direction": mesa.visualization.Choice("Wind Direction", "N", ["N", "S", "E", "W"]),
-    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0.5, 0.0, 1.0, 0.1),
+    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0, 0.0, 1.0, 0.1),
 }
 
 server = mesa.visualization.ModularServer(
