@@ -116,7 +116,13 @@ canvas_element = mesa.visualization.CanvasGrid(
     lambda agent: agent_portrayal(agent),
     GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
 )
-# TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
+# TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas
+
+# Criando o gráfico de CO2 separadamente
+co2_chart = mesa.visualization.ChartModule(
+    [{"Label": "CO2(Kg)", "Color": "#000000"}],
+)
+
 tree_chart = mesa.visualization.ChartModule(
     [{"Label": label, "Color": color} for (label, color) in COLORS.items() if label in ["Fine", "Burning", "Burned"]]
 )
@@ -148,5 +154,5 @@ model_params = {
 }
 
 server = mesa.visualization.ModularServer(
-    ForestFire, [canvas_element, tree_chart, pie_chart], "Forest Fire", model_params
+    ForestFire, [canvas_element, tree_chart, pie_chart, co2_chart], "Forest Fire", model_params
 )

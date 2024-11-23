@@ -65,6 +65,7 @@ class ForestFire(mesa.Model):
                 "Terra": lambda model: self.count_type(model, agent_type=Terra),  # Conta o número de agentes do tipo Terra
                 "Total": lambda model: self.count_type(model, agent_type=Tree),  # Conta o número total de árvores
                 "Clouds": lambda model: self.count_type(model, agent_type=Cloud),
+                "CO2(Kg)": lambda model: self.count_CO2(model)
             }
         )   
 
@@ -255,7 +256,8 @@ class ForestFire(mesa.Model):
                 else:
                     if random.randint(0, 100) > alpha:
                         neighbor.status = "Burning"
-
+        # Cálculo de CO2 emitido na queima da árvore
+        agent.CO2_emission = agent.size * 20 * 0.5 * 3.67 # Biomassa x 0.5 x 3.67
         agent.status = "Burned"
 
     def _get_wind_vector(self):
@@ -287,3 +289,13 @@ class ForestFire(mesa.Model):
                 if (not status) or agent.status == status:
                     count += 1
         return count
+   
+    @staticmethod
+    def count_CO2(model):
+        CO2_emission_total = 0
+        for agent in model.schedule.agents:
+            if isinstance(agent, Tree):
+                tree = agent
+                CO2_emission_total += tree.CO2_emission * model.biome.CO2_emission_factor
+                CO2_emission_total -= tree.CO2_sequestered * model.biome.CO2_emission_factor
+        return CO2_emission_total

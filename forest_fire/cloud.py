@@ -80,7 +80,7 @@ class Cloud(SmoothWalker):
                     for t in tree:
                         if isinstance(t, Tree) and t.status == "Burning":
                             t.status = "Fine"  # Apaga o fogo
-    
+                            t.CO2_emission /= 1.5  # Reduz a emissão de CO2 em 33% ao ser apagada
     def check_and_merge(self):
         """Verifica se há nuvens próximas e as funde em uma única nuvem maior."""
         if self.pos is not None:
