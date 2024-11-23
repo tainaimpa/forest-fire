@@ -256,7 +256,8 @@ class ForestFire(mesa.Model):
                 else:
                     if random.randint(0, 100) > alpha:
                         neighbor.status = "Burning"
-
+        # Cálculo de CO2 emitido na queima da árvore
+        agent.CO2_emission = agent.size * 20 * 0.5 * 3.67 # Biomassa x 0.5 x 3.67
         agent.status = "Burned"
 
     def _get_wind_vector(self):
