@@ -52,16 +52,29 @@ params = {
     "height": 100,
     "width": 100,
     "tree_density": 0,
-    "cloud_quantity": 12,
-    "rainy_season": True,
-    'biome_name': "Default"
+    "cloud_quantity": 0,
+    "rainy_season": False,
+    'biome_name': "Default",
+    "random_fire" : True,
+    "position_fire":'Top',
+    "cloud_step":15,
+    'clouds_per_step':0,
+    'clouds_size':3,
+    "reprod_speed":1,
+    "water_density":0.15,
+    "num_of_lakes": 1,
+    "corridor_density":0.15,
+    "obstacles_density":0.15,
+    "obstacles":True,
+    "obstacles":True,
+    "wind_intensity":True,
 }
 
 if __name__ == "__main__":
     results = batch_run(
         ForestFire,
         parameters=params,
-        iterations=10,
+        iterations=100,
         max_steps=100,
         number_processes=None,
         data_collection_period=1,

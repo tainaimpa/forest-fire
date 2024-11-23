@@ -36,7 +36,7 @@ class Cloud(SmoothWalker):
     def __init__(self, unique_id, pos, model, size, color, direction, full=False, speed=.2, direction_change_rate=0.1):
         super().__init__(unique_id, pos, model, size=size, direction=direction, change_rate=direction_change_rate)
         self.color = color
-        self.full = full  
+        self.full = self.size > 5
         self.speed = speed  
         self.direction_change_rate = direction_change_rate  
 
@@ -50,7 +50,8 @@ class Cloud(SmoothWalker):
                 self.model.schedule.remove(self)
                 return 
             self.controlled_move()            
-            self.rain()
+            if self.full:
+                self.rain()
             self.check_and_merge()
 
     def controlled_move(self):
@@ -93,7 +94,7 @@ class Cloud(SmoothWalker):
             for neighbor in self.model.grid.get_neighbors(self.pos, moore=True):
                 if isinstance(neighbor, Cloud):
                     self.size += neighbor.size
-                    self.full = self.size >= 4
                     self.model.grid.remove_agent(neighbor)  
                     self.model.schedule.remove(neighbor)
+                    
 

@@ -17,7 +17,9 @@ class ForestFire(mesa.Model):
         rainy_season=False,
         imagens=False,
         cloud_quantity=0,
-        cloud_step=10,
+        cloud_step=15,
+        clouds_per_step=1,
+        clouds_size=3,
         tree_density=0.65,
         random_fire = True,
         position_fire = "Top",
@@ -46,6 +48,8 @@ class ForestFire(mesa.Model):
         self.rainy_season = rainy_season
         self.cloud_quantity = cloud_quantity
         self.cloud_step = cloud_step
+        self.clouds_per_step = clouds_per_step
+        self.clouds_size = clouds_size
         self.reprod_speed = reprod_speed
         self.water_density = water_density
         self.num_of_lakes = num_of_lakes
@@ -211,7 +215,7 @@ class ForestFire(mesa.Model):
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
             direction = self._get_wind_vector()
-            cloud_size = self.random.randint(2, 5)
+            cloud_size = self.random.randint(1,self.clouds_size)
             cloud = Cloud(self.next_id(), (x, y), self, size=cloud_size, color="gray", direction=direction, full=False, speed=self.wind_intensity)
             self.schedule.add(cloud)
             self.grid.place_agent(cloud, (x, y))
@@ -238,9 +242,8 @@ class ForestFire(mesa.Model):
         self.schedule.step()  # Avança o passo do modelo
         self.datacollector.collect(self)  # Coleta dados após cada passo
         
-        # Adiciona novas nuvens com tamanhos variados a cada 10 passos
         if self.rainy_season and self.schedule.steps % self.cloud_step == 0:
-            self._initialize_clouds(5)  # Adiciona 5 novas nuvens a cada 10 passos
+            self._initialize_clouds(self.clouds_per_step)  
 
     def propagate_fire(self, agent):
         for neighbor in agent.model.grid.iter_neighbors(agent.pos, True):
