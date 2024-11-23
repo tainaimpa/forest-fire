@@ -2,6 +2,7 @@ import mesa
 import random
 
 from forest_fire.obstacles import Lake, Corridor, Obstacle, Puddle
+from forest_fire.ground import Terra
 
 # Dicionário de cores para cada status da árvore
 COLORS = {
@@ -9,24 +10,6 @@ COLORS = {
     "Burning": "#FF0000",  # Cor para árvores queimando (vermelho)
     "Burned": "#3D2B1F",    # Cor para árvores queimadas (marrom escuro)
 }
-
-class Terra(mesa.Agent):
-    """
-    O agente terra preenche todo o grid.
-    Ele altera sua cor dependendo do status da árvore sobre ele.
-    """
-    def __init__(self, pos, model, color, img_path: str = None):
-        super().__init__(pos, model)
-        self.pos = pos
-        self.img_path = img_path
-        self.color = color  # Cor padrão da terra (terra nua)
-        self.status = "Terra"
-    
-    def get_image(self):
-        return f"{self.img_path}/terra.png"
-    
-    def step(self):
-        pass
                 
 class Tree(mesa.Agent):
     """
@@ -161,7 +144,7 @@ class Tree(mesa.Agent):
         A cada passo, a árvore pode pegar fogo e propagar o fogo para as árvores vizinhas.
         """
         if self.status == "Burning":
-            for neighbor in self.model.grid.iter_neighbors(self.pos, moore=True):
+            for neighbor in self.model.grid.iter_neighbors(self.pos, moore=False):
                 if isinstance(neighbor, Lake):
                     self.status = "Burned"
                     return
@@ -172,7 +155,7 @@ class Tree(mesa.Agent):
                     self.model.num_fine_trees -= 1
                 elif neighbor.status == "Corridor" and neighbor.burnable:
                     neighbor.status = "Burned"
-                    for neighbor_c in self.model.grid.iter_neighbors(neighbor.pos, moore=True):
+                    for neighbor_c in self.model.grid.iter_neighbors(neighbor.pos, moore=True, radius=neighbor.radius):
                         if neighbor_c.status == "Fine" and neighbor_c.burnable:                          
                             neighbor_c.status = "Burning"
                             self.model.num_fine_trees -= 1
