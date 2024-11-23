@@ -43,6 +43,8 @@ class Tree(mesa.Agent):
         self.img_path = img_path
         self.tree_density = tree_density
         self.reprod_speed = reprod_speed
+        self.CO2_emission = 0
+        self.CO2_sequestered = 0
         
     def remove_burned_tree(self, burned_tree):
         self.model.grid.remove_agent(burned_tree)
@@ -116,11 +118,17 @@ class Tree(mesa.Agent):
                     visited_cells.add(neighbor2)
                     if random.uniform(0, 1) < n2_reproduction_rate and self.can_grow(neighbor2):
                         self.grow_tree(neighbor2)
+                        # Sequestro e emissão de CO2
+                        if neighbor2 == Tree:
+                            neighbor2.CO_sequestered += neighbor1.size * 0.1  #  Sequestra 0.1kg de CO2 por unidade de tamanho
                     # Transforma todas as árvores vizinhas queimadas em ground
                     elif isinstance(neighbor2, Tree) and neighbor2.status == 'Burned':
                         self.remove_burned_tree(neighbor2)
             if random.uniform(0, 1) < n1_reproduction_rate and self.can_grow(neighbor1):
-                    self.grow_tree(neighbor1)                
+                    self.grow_tree(neighbor1)
+                    # Sequestro e emissão de CO2
+                    if neighbor1 == Tree:
+                        neighbor1.CO_sequestered += neighbor1.size * 0.1  # Sequestra 0.1kg de CO2 por unidade de tamanho                
             # Transforma todas as árvores vizinhas queimadas em ground
             elif isinstance(neighbor1, Tree) and neighbor1.status == 'Burned':
                 self.remove_burned_tree(neighbor1)
@@ -143,7 +151,10 @@ class Tree(mesa.Agent):
                     for neighbor_c in self.model.grid.iter_neighbors(neighbor.pos, moore=True):
                         if neighbor_c.status == "Fine" and neighbor_c.burnable:                          
                             neighbor_c.status = "Burning"
+             # Cálculo de CO2 emitido na queima da árvore
+            self.CO2_emission = self.size * 20 * 0.5 * 3.67 # Biomassa x 0.5 x 3.67
             self.status = "Burned"
+           
             
         self.tree_reproduction()
     
