@@ -140,7 +140,7 @@ class Tree(mesa.Agent):
     def tree_reproduction(self):
         if self.status != 'Fine':
             return
-        
+
         n_first_level_neighbors, n_second_level_neighbors, n_first_level_trees, n_second_level_trees = self.search_neighbours(self.pos)            
         n_trees = n_first_level_trees + n_second_level_trees
 
