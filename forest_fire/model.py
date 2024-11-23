@@ -230,30 +230,27 @@ class ForestFire(mesa.Model):
             self.schedule.add(cloud)
             self.grid.place_agent(cloud, (x, y))
             
-    def _probabilistic_fire(self):
+    def _random_fire(self):
         '''
-        Inicia um foco de incêndio probabilisticamente
+        Inicia um foco de incêndio
         '''
-        probability = random.uniform(0, 0.5)
-        
-        if probability > 0.2:
-            fire_list = [] 
+        fire_list = [] 
 
-            g = self.random.randint(1, 7)
-            for _ in range(g):
-                fire_list.append((self.random.randint(0, self.width-1),
-                                self.random.randint(0, self.height-1)))
+        g = self.random.randint(1, 8)
+        for _ in range(g):
+            fire_list.append((self.random.randint(0, self.width-1),
+                            self.random.randint(0, self.height-1)))
+        
+        for _contents, pos in self.grid.coord_iter():
+            size = self.biome.size.sort_value() # Tamanho da árvore conforme o bioma
+            color = self.biome.tree_color  # Cor do bioma para a árvore
+            img_path = self.biome.img_path # Diretório das imagens do bioma  
             
-            for _contents, pos in self.grid.coord_iter():
-                size = self.biome.size.sort_value() # Tamanho da árvore conforme o bioma
-                color = self.biome.tree_color  # Cor do bioma para a árvore
-                img_path = self.biome.img_path # Diretório das imagens do bioma  
-                
-                agent = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
-                if agent.pos in fire_list:
-                    self.schedule.add(agent)
-                    self.grid.place_agent(agent, pos)
-                    agent.status = "Burning"
+            agent = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
+            if agent.pos in fire_list:
+                self.schedule.add(agent)
+                self.grid.place_agent(agent, pos)
+                agent.status = "Burning"
             
     def get_cell_items(self, positions: list, types: list):
         agents_in_cell = self.grid.get_cell_list_contents(positions)
@@ -282,7 +279,7 @@ class ForestFire(mesa.Model):
             self._initialize_clouds(5)  # Adiciona 5 novas nuvens a cada 10 passos
     
         if self.biome.humidity < 11 and self.schedule.steps % 5 == 0:
-                self._probabilistic_fire()
+                self._random_fire()
         
     def propagate_fire(self, agent):
         for neighbor in agent.model.grid.iter_neighbors(agent.pos, True):

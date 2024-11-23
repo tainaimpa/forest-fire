@@ -121,7 +121,7 @@ class Tree(mesa.Agent):
         A cada passo, a árvore pode pegar fogo e propagar o fogo para as árvores vizinhas.
         """
         if self.status == "Burning":
-            for neighbor in self.model.grid.iter_neighbors(self.pos, moore=True):
+            for neighbor in self.model.grid.iter_neighbors(self.pos, moore=False):
                 if isinstance(neighbor, Lake):
                     self.status = "Burned"
                     return
