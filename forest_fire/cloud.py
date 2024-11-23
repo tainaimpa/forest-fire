@@ -34,9 +34,9 @@ class SmoothWalker(mesa.Agent):
 
 class Cloud(SmoothWalker):
     def __init__(self, unique_id, pos, model, size, color, direction, full=False, speed=.2, direction_change_rate=0.1):
-        super().__init__(unique_id, pos, model, size=size, direction=direction, change_rate=0.1)
+        super().__init__(unique_id, pos, model, size=size, direction=direction, change_rate=direction_change_rate)
         self.color = color
-        self.full = full  
+        self.full = self.size > 5
         self.speed = speed  
         self.direction_change_rate = direction_change_rate  
 
@@ -50,7 +50,8 @@ class Cloud(SmoothWalker):
                 self.model.schedule.remove(self)
                 return 
             self.controlled_move()            
-            self.rain()
+            if self.full:
+                self.rain()
             self.check_and_merge()
 
     def controlled_move(self):
@@ -67,8 +68,14 @@ class Cloud(SmoothWalker):
         if self.random.random() < self.direction_change_rate:
             self.change_direction()
 
+    def change_direction(self):
+        """Altera a direção suavemente para garantir o movimento controlado."""
+        new_dx = self.direction[0] + self.random.uniform(-0.1, 0.1)  
+        new_dy = self.direction[1] + self.random.uniform(-0.1, 0.1)  
+        self.direction = (max(-1, min(new_dx, 1)), max(-1, min(new_dy, 1)))
+
     def rain(self):
-        """Simula a chuva """
+        """Simula a chuva."""
         x, y = self.pos
         range_ = self.size + 3
         for dx in range(-range_, range_ + 1):
@@ -80,13 +87,14 @@ class Cloud(SmoothWalker):
                     for t in tree:
                         if isinstance(t, Tree) and t.status == "Burning":
                             t.status = "Fine"  # Apaga o fogo
-    
+                            t.CO2_emission /= 1.5  # Reduz a emissão de CO2 em 33% ao ser apagada
     def check_and_merge(self):
         """Verifica se há nuvens próximas e as funde em uma única nuvem maior."""
         if self.pos is not None:
             for neighbor in self.model.grid.get_neighbors(self.pos, moore=True):
-                if type(neighbor) is Cloud:
+                if isinstance(neighbor, Cloud):
                     self.size += neighbor.size
-                    self.full = self.size >= 4
                     self.model.grid.remove_agent(neighbor)  
-                    self.model.schedule.remove(neighbor)    
+                    self.model.schedule.remove(neighbor)
+                    
+

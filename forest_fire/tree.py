@@ -43,6 +43,8 @@ class Tree(mesa.Agent):
         self.img_path = img_path
         self.tree_density = tree_density
         self.reprod_speed = reprod_speed
+        self.CO2_emission = 0
+        self.CO2_sequestered = 0
         
     def remove_burned_tree(self, burned_tree):
         self.model.grid.remove_agent(burned_tree)
@@ -50,6 +52,8 @@ class Tree(mesa.Agent):
     
     def grow_tree(self, growable_agent):
         pos = growable_agent.pos
+        if isinstance(growable_agent, Tree):                
+            growable_agent.CO2_sequestered += growable_agent.size * 0.1  #  Sequestra 0.1kg de CO2 por unidade de tamanho
         if not isinstance(growable_agent, Terra):
             self.model.grid.remove_agent(growable_agent)
             self.model.schedule.remove(growable_agent)
@@ -177,7 +181,10 @@ class Tree(mesa.Agent):
                             neighbor_c.status = "Burning"
                             self.model.num_fine_trees -= 1
         
+             # Cálculo de CO2 emitido na queima da árvore
+            self.CO2_emission = self.size * 20 * 0.5 * 3.67 # Biomassa x 0.5 x 3.67
             self.status = "Burned"
+           
             
         self.tree_reproduction()
     

@@ -18,7 +18,8 @@ COLORS = {
     "Lake": "#3A77F0", #blue
     "Corridor": "#8FBF3C",
     "Obstacle": "#6E6E6E",
-    "Cloud": "#A0A0A0",  # TODO nuvens cheias mais escuras 
+    "Cloud": "#A0A0A0",
+    "heavy cloud" : "#565b70"  ,
     "Terra": "#6B4423",
 }
 
@@ -107,7 +108,7 @@ def agent_portrayal(agent):
                 "Layer": 20,
                 "x": x,
                 "y": y,
-                "Color": COLORS["Cloud"], 
+                "Color": COLORS["heavy cloud"] if agent.full else COLORS["Cloud"], 
             }
 
 canvas_element = mesa.visualization.CanvasGrid(lambda agent: agent_portrayal(agent), GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -116,7 +117,13 @@ canvas_element = mesa.visualization.CanvasGrid(
     lambda agent: agent_portrayal(agent),
     GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT
 )
-# TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas  
+# TODO adicionar o numero de nuvens e um novo grafico para arvores apagadas
+
+# Criando o gráfico de CO2 separadamente
+co2_chart = mesa.visualization.ChartModule(
+    [{"Label": "CO2(Kg)", "Color": "#000000"}],
+)
+
 tree_chart = mesa.visualization.ChartModule(
     [{"Label": label, "Color": color} for (label, color) in COLORS.items() if label in ["Fine", "Burning", "Burned"]]
 )
@@ -130,12 +137,14 @@ model_params = {
     "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
-    "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
     "random_fire" : mesa.visualization.Checkbox("Random Fire Start", True),
     "position_fire": mesa.visualization.Choice("Fire Start Direction","Top", ["Top", "Bottom", "Left", "Right", "Middle"]),
     "tree_density": mesa.visualization.Slider("Tree Density", 0, 0, 1.0, 0.01, description="If the value is 0, the biome density will be used."),
-    "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1),
-    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 0.3, 0.0, 1.0, 0.1), 
+    "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1, description="number of clouds initialized at start") ,
+    "cloud_step": mesa.visualization.Slider("Clouds Step", 15, 1, 30, 1,description="number of steps until new clouds are initialized"),
+    'clouds_per_step':mesa.visualization.Slider("Clouds per Step", 3, 0, 10, 1,description="number of clouds initialized during the simulation"),
+    'clouds_size':mesa.visualization.Slider("size of clouds", 3, 0, 10, 1,description="size of clouds initialized"),
+    "reprod_speed": mesa.visualization.Slider("Reproduction Rate", 0.3, 0.0, 1.0, 0.01), 
     "water_density": mesa.visualization.Slider("Water Density", 0.15, 0, 1.0, 0.01),
     "num_of_lakes": mesa.visualization.Slider("Number of Lakes", 1, 0, 10, 1), 
     "corridor_density": mesa.visualization.Slider("Corridor Density", 0.15, 0, 1.0, 0.01), 
@@ -148,5 +157,5 @@ model_params = {
 }
 
 server = mesa.visualization.ModularServer(
-    ForestFire, [canvas_element, tree_chart, pie_chart], "Forest Fire", model_params
+    ForestFire, [canvas_element, tree_chart, pie_chart, co2_chart], "Forest Fire", model_params
 )

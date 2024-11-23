@@ -17,6 +17,9 @@ class ForestFire(mesa.Model):
         rainy_season=False,
         imagens=False,
         cloud_quantity=0,
+        cloud_step=15,
+        clouds_per_step=1,
+        clouds_size=3,
         tree_density=0.65,
         random_fire = True,
         position_fire = "Top",
@@ -30,6 +33,7 @@ class ForestFire(mesa.Model):
         reprod_speed=1, 
         wind_direction="N",  # Direção do vento: "none", "north", "south", "east", "west"
         wind_intensity=0.5  # Intensidade do vento: 0 (sem vento) a 1 (vento muito forte)
+        
     ):
         super().__init__()
 
@@ -43,6 +47,9 @@ class ForestFire(mesa.Model):
         self.tree_density = self.biome.density if tree_density == 0 else tree_density
         self.rainy_season = rainy_season
         self.cloud_quantity = cloud_quantity
+        self.cloud_step = cloud_step
+        self.clouds_per_step = clouds_per_step
+        self.clouds_size = clouds_size
         self.reprod_speed = reprod_speed
         self.water_density = water_density
         self.num_of_lakes = num_of_lakes
@@ -67,6 +74,7 @@ class ForestFire(mesa.Model):
                 "Terra": lambda model: self.count_type(model, agent_type=Terra),  # Conta o número de agentes do tipo Terra
                 "Total": lambda model: self.count_type(model, agent_type=Tree),  # Conta o número total de árvores
                 "Clouds": lambda model: self.count_type(model, agent_type=Cloud),
+                "CO2(Kg)": lambda model: self.count_CO2(model)
             }
         )   
 
@@ -211,9 +219,9 @@ class ForestFire(mesa.Model):
         for _ in range(cloud_count):
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
-            direction = (self.random.choice([-1, 0, 1]), self.random.choice([-1, 0, 1]))
-            cloud_size = self.random.randint(2, 5)
-            cloud = Cloud(self.next_id(), (x, y), self, size=cloud_size, color="gray", direction=direction, full=False)
+            direction = self._get_wind_vector()
+            cloud_size = self.random.randint(1,self.clouds_size)
+            cloud = Cloud(self.next_id(), (x, y), self, size=cloud_size, color="gray", direction=direction, full=False, speed=self.wind_intensity)
             self.schedule.add(cloud)
             self.grid.place_agent(cloud, (x, y))
             
@@ -239,9 +247,8 @@ class ForestFire(mesa.Model):
         self.schedule.step()  # Avança o passo do modelo
         self.datacollector.collect(self)  # Coleta dados após cada passo
         
-        # Adiciona novas nuvens com tamanhos variados a cada 10 passos
-        if self.rainy_season and self.schedule.steps % 10 == 0:
-            self._initialize_clouds(5)  # Adiciona 5 novas nuvens a cada 10 passos
+        if self.rainy_season and self.schedule.steps % self.cloud_step == 0:
+            self._initialize_clouds(self.clouds_per_step)  
 
     def propagate_fire(self, agent):
         for neighbor in agent.model.grid.iter_neighbors(agent.pos, True):
@@ -262,6 +269,8 @@ class ForestFire(mesa.Model):
                         neighbor.status = "Burning"
                         self.num_fine_trees -= 1
 
+        # Cálculo de CO2 emitido na queima da árvore
+        agent.CO2_emission = agent.size * 20 * 0.5 * 3.67 # Biomassa x 0.5 x 3.67
         agent.status = "Burned"
 
     def _get_wind_vector(self):
@@ -293,3 +302,13 @@ class ForestFire(mesa.Model):
                 if (not status) or agent.status == status:
                     count += 1
         return count
+   
+    @staticmethod
+    def count_CO2(model):
+        CO2_emission_total = 0
+        for agent in model.schedule.agents:
+            if isinstance(agent, Tree):
+                tree = agent
+                CO2_emission_total += tree.CO2_emission * model.biome.CO2_emission_factor
+                CO2_emission_total -= tree.CO2_sequestered * model.biome.CO2_emission_factor
+        return CO2_emission_total
