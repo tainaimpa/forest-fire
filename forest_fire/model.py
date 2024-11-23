@@ -40,6 +40,7 @@ class ForestFire(mesa.Model):
         self.water_density = water_density
         self.num_of_lakes = num_of_lakes
         self.corridor_density = corridor_density
+        self.corridor_radius = self.biome.corridor_radius
         self.obstacles_density = obstacles_density
         self.obstacles = obstacles
         self.corridor = corridor
@@ -116,7 +117,7 @@ class ForestFire(mesa.Model):
         agent_type = random.choices(types, weights=weights_list)[0]
         match agent_type:
             case "Corridor":
-                self._initialize_corridor(pos)
+                self._initialize_corridor(pos, self.corridor_radius)
             case "Obstacle":
                 self._initialize_obstacle(pos)
             case "None":
@@ -167,8 +168,16 @@ class ForestFire(mesa.Model):
         self.schedule.add(obstacle)
         self.grid.place_agent(obstacle, pos)
     
-    def _initialize_corridor(self, pos):
-        corridor = Corridor(self.next_id(), self, pos)
+    def _initialize_corridor(self, pos, corridor_radius):
+        corridor = Corridor(self.next_id(), self, pos, corridor_radius)
+        if self.biome.humidity < 11:
+            burning_probability = 0.01
+            if random.random() < burning_probability:
+                size = self.biome.size.sort_value() # Tamanho da árvore conforme o bioma
+                color = self.biome.tree_color  # Cor do bioma para a árvore
+                img_path = self.biome.img_path # Diretório das imagens do bioma
+                corridor = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
+                corridor.status = "Burning"
         self.schedule.add(corridor)
         self.grid.place_agent(corridor, pos)
 
@@ -183,6 +192,12 @@ class ForestFire(mesa.Model):
             cloud = Cloud(self.next_id(), (x, y), self, size=cloud_size, color="gray", direction=direction, full=False)
             self.schedule.add(cloud)
             self.grid.place_agent(cloud, (x, y))
+            
+    def _probabilistic_fire(self):
+        '''
+        Inicia um foco de incêndio probabilisticamente
+        '''
+        pass
             
     def get_cell_items(self, positions: list, types: list):
         agents_in_cell = self.grid.get_cell_list_contents(positions)
@@ -205,6 +220,10 @@ class ForestFire(mesa.Model):
         # Adiciona novas nuvens com tamanhos variados a cada 10 passos
         if self.rainy_season and self.schedule.steps % 10 == 0:
             self._initialize_clouds(5)  # Adiciona 5 novas nuvens a cada 10 passos
+            
+        if self.biome.humidity < 11 and not self.corridor and self.schedule.steps % 5 == 0:
+            self._probabilistic_fire()
+            
     
     @staticmethod
     def count_type(model, status=None, agent_type=None):
