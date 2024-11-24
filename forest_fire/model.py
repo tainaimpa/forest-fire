@@ -295,9 +295,10 @@ class ForestFire(mesa.Model):
         Realiza um passo no modelo, atualizando os status das árvores.
         A cada passo, verifica as interações da árvore com a terra.
         """
-        for agent in self.schedule.agents:
-            if agent.status == "Burning":
-                self.propagate_fire(agent)
+        if self.wind_intensity != 0:
+            for agent in self.schedule.agents:
+                if agent.status == "Burning":
+                    self.propagate_fire(agent)
 
         self.schedule.step()  # Avança o passo do modelo
         self.datacollector.collect(self)  # Coleta dados após cada passo
