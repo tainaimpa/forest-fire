@@ -6,8 +6,8 @@ from forest_fire.cloud import Cloud
 from forest_fire.fireman import Fireman
 
 # Ajuste do tamanho do grid e da tela
-GRID_WIDTH = 75
-GRID_HEIGHT = 75
+GRID_WIDTH = 20
+GRID_HEIGHT = 20
 CANVAS_WIDTH = 750
 CANVAS_HEIGHT = 750
 
@@ -39,8 +39,9 @@ def agent_portrayal(agent):
     x, y = agent.pos
     
     if isinstance(agent, Obstacle) or isinstance(agent, Corridor) or isinstance(agent, Puddle) or isinstance(agent, Lake):
+        shape = f"forest_fire/static/images/obstacles/{agent.status}.png" if agent.model.biome.code != 'default' else 'rect'
         return {
-            "Shape": "rect",
+            "Shape": shape,
             "w": 1,
             "h": 1,
             "Filled": True,
