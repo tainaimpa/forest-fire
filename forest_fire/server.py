@@ -3,6 +3,7 @@ from forest_fire.model import ForestFire
 from forest_fire.tree import Tree, Terra
 from forest_fire.obstacles import Obstacle, Corridor, Puddle, Lake
 from forest_fire.cloud import Cloud
+from forest_fire.fireman import Fireman
 
 # Ajuste do tamanho do grid e da tela
 GRID_WIDTH = 75
@@ -21,6 +22,7 @@ COLORS = {
     "Cloud": "#A0A0A0",
     "heavy cloud" : "#565b70"  ,
     "Terra": "#6B4423",
+    "Fireman": "#00A8FF" 
 }
 
 def agent_portrayal(agent):
@@ -110,6 +112,17 @@ def agent_portrayal(agent):
                 "y": y,
                 "Color": COLORS["heavy cloud"] if agent.full else COLORS["Cloud"], 
             }
+    
+    if isinstance(agent, Fireman):
+        return {
+            "Shape": "circle",
+            "r": 0.5,                     
+            "Filled": True,         
+            "Layer": 1,
+            "x": x,
+            "y": y,  
+            "Color":COLORS["Fireman"],                                 
+        }
 
 canvas_element = mesa.visualization.CanvasGrid(lambda agent: agent_portrayal(agent), GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT)
 
@@ -140,6 +153,7 @@ model_params = {
     "random_fire" : mesa.visualization.Checkbox("Random Fire Start", True),
     "position_fire": mesa.visualization.Choice("Fire Start Direction","Top", ["Top", "Bottom", "Left", "Right", "Middle"]),
     "tree_density": mesa.visualization.Slider("Tree Density", 0, 0, 1.0, 0.01, description="If the value is 0, the biome density will be used."),
+    "fireman_quantity": mesa.visualization.Slider("Fireman Quantity", 0, 0, 1000, 50),
     "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1, description="number of clouds initialized at start") ,
     "cloud_step": mesa.visualization.Slider("Clouds Step", 15, 1, 30, 1,description="number of steps until new clouds are initialized"),
     'clouds_per_step':mesa.visualization.Slider("Clouds per Step", 3, 0, 10, 1,description="number of clouds initialized during the simulation"),

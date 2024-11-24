@@ -3,6 +3,7 @@ from typing import Literal
 from forest_fire.cloud import Cloud
 from forest_fire.tree import Tree, Terra
 from forest_fire.biome import biomes
+from forest_fire.fireman import Fireman
 from forest_fire.obstacles import Lake, Corridor, Obstacle
 import random
 import numpy as np
@@ -17,6 +18,7 @@ class ForestFire(mesa.Model):
         rainy_season=False,
         imagens=False,
         cloud_quantity=0,
+        fireman_quantity=0,
         cloud_step=15,
         clouds_per_step=1,
         clouds_size=3,
@@ -47,6 +49,7 @@ class ForestFire(mesa.Model):
         self.tree_density = self.biome.density if tree_density == 0 else tree_density
         self.rainy_season = rainy_season
         self.cloud_quantity = cloud_quantity
+        self.fireman_quantity = fireman_quantity
         self.cloud_step = cloud_step
         self.clouds_per_step = clouds_per_step
         self.clouds_size = clouds_size
@@ -90,6 +93,7 @@ class ForestFire(mesa.Model):
         
         if rainy_season:
             self._initialize_clouds(cloud_quantity)   #TODO associar a biomas 
+        self._initialize_firemen(fireman_quantity)
 
         # Coleta os dados iniciais
         self.datacollector.collect(self)
@@ -233,6 +237,26 @@ class ForestFire(mesa.Model):
             cloud = Cloud(self.next_id(), (x, y), self, size=cloud_size, color="gray", direction=direction, full=False, speed=self.wind_intensity)
             self.schedule.add(cloud)
             self.grid.place_agent(cloud, (x, y))
+    
+    def _initialize_firemen(self, fireman_quantity=0):
+        
+        """
+        Inicializa um número especificado de bombeiros em células aleatórias,
+        garantindo que estejam posicionados em células com Terra ou Árvore.
+        """
+        for i in range(fireman_quantity):
+            while True:  # Continua tentando até encontrar uma célula válida
+                x = self.random.randrange(self.grid.width)
+                y = self.random.randrange(self.grid.height)
+                pos = (x, y)
+                
+                # Verificar se a célula contém Terra ou Árvore
+                cell_contents = self.grid.get_cell_list_contents([pos])
+                if any(isinstance(agent, (Terra, Tree)) for agent in cell_contents):
+                    fireman = Fireman(unique_id=i, model=self, pos=pos)
+                    self.schedule.add(fireman)
+                    self.grid.place_agent(fireman, pos)
+                    break    
             
     def _random_fire(self):
         '''

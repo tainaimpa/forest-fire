@@ -37,7 +37,7 @@ class Tree(mesa.Agent):
         pos = growable_agent.pos
         if isinstance(growable_agent, Tree):                
             growable_agent.CO2_sequestered += growable_agent.size * 0.1  #  Sequestra 0.1kg de CO2 por unidade de tamanho
-        if not isinstance(growable_agent, Terra):
+        if not isinstance(growable_agent, Terra) and growable_agent.status != "Fireman":
             self.model.grid.remove_agent(growable_agent)
             self.model.schedule.remove(growable_agent)
         size = self.model.biome.size.sort_value()
