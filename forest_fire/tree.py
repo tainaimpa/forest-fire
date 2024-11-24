@@ -50,7 +50,7 @@ class Tree(mesa.Agent):
     
     def grow_tree(self, growable_agent):
         pos = growable_agent.pos
-        if not isinstance(growable_agent, Terra):
+        if not isinstance(growable_agent, Terra) and growable_agent.status != "Fireman":
             self.model.grid.remove_agent(growable_agent)
             self.model.schedule.remove(growable_agent)
         size = self.model.biome.size.sort_value()

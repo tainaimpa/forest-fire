@@ -218,15 +218,24 @@ class ForestFire(mesa.Model):
             self.grid.place_agent(cloud, (x, y))
     
     def _initialize_firemen(self, fireman_quantity=0):
+        
         """
-        Inicializa um número especificado de bombeiros em células aleatórias.
+        Inicializa um número especificado de bombeiros em células aleatórias,
+        garantindo que estejam posicionados em células com Terra ou Árvore.
         """
         for i in range(fireman_quantity):
-            x = self.random.randrange(self.grid.width)
-            y = self.random.randrange(self.grid.height)
-            fireman = Fireman(unique_id=i, model=self, pos=(x, y))
-            self.schedule.add(fireman)
-            self.grid.place_agent(fireman, (x, y))
+            while True:  # Continua tentando até encontrar uma célula válida
+                x = self.random.randrange(self.grid.width)
+                y = self.random.randrange(self.grid.height)
+                pos = (x, y)
+                
+                # Verificar se a célula contém Terra ou Árvore
+                cell_contents = self.grid.get_cell_list_contents([pos])
+                if any(isinstance(agent, (Terra, Tree)) for agent in cell_contents):
+                    fireman = Fireman(unique_id=i, model=self, pos=pos)
+                    self.schedule.add(fireman)
+                    self.grid.place_agent(fireman, pos)
+                    break    
             
     def get_cell_items(self, positions: list, types: list):
         agents_in_cell = self.grid.get_cell_list_contents(positions)
@@ -301,13 +310,4 @@ class ForestFire(mesa.Model):
                 # Caso contrário, verifica se o status do agente corresponde.
                 if (not status) or agent.status == status:
                     count += 1
-        return count
-    
-    @staticmethod
-    def count_fireman(model):
-        """Conta o número de bombeiros no modelo."""
-        count = 0
-        for fireman in model.schedule.agents:
-            if isinstance(fireman, Fireman):
-                count += 1
         return count

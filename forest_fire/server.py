@@ -21,7 +21,6 @@ COLORS = {
     "Obstacle": "#6E6E6E",
     "Cloud": "#A0A0A0",  # TODO nuvens cheias mais escuras 
     "Terra": "#6B4423",
-    "Extinguished": "#FFFFFF",
     "Fireman": "#00A8FF" 
 }
 

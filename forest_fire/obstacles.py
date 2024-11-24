@@ -40,6 +40,3 @@ class Corridor(Obstacle):
             pos = self.pos
             self.model.grid.remove_agent(self)
             self.model.schedule.remove(self)
-            ground = Ground(self.model.next_id(), self.model, pos)
-            self.model.grid.place_agent(ground, pos)
-            self.model.schedule.add(ground)
