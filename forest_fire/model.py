@@ -3,6 +3,7 @@ from typing import Literal
 from forest_fire.cloud import Cloud
 from forest_fire.tree import Tree, Terra
 from forest_fire.biome import biomes
+from forest_fire.fireman import Fireman
 from forest_fire.obstacles import Lake, Corridor, Obstacle
 import random
 import numpy as np
@@ -17,6 +18,7 @@ class ForestFire(mesa.Model):
         rainy_season=False,
         imagens=False,
         cloud_quantity=0,
+        fireman_quantity=0,
         cloud_step=15,
         clouds_per_step=1,
         clouds_size=3,
@@ -47,6 +49,7 @@ class ForestFire(mesa.Model):
         self.tree_density = self.biome.density if tree_density == 0 else tree_density
         self.rainy_season = rainy_season
         self.cloud_quantity = cloud_quantity
+        self.fireman_quantity = fireman_quantity
         self.cloud_step = cloud_step
         self.clouds_per_step = clouds_per_step
         self.clouds_size = clouds_size
@@ -54,6 +57,7 @@ class ForestFire(mesa.Model):
         self.water_density = water_density
         self.num_of_lakes = num_of_lakes
         self.corridor_density = corridor_density
+        self.corridor_radius = self.biome.corridor_radius
         self.obstacles_density = obstacles_density
         self.obstacles = obstacles
         self.corridor = corridor
@@ -63,6 +67,8 @@ class ForestFire(mesa.Model):
         self.wind_intensity = wind_intensity 
         self.schedule = mesa.time.RandomActivation(self)
         self.grid = mesa.space.MultiGrid(self.width, self.height, torus=False)
+        
+        self.num_fine_trees = 0
         
         self.datacollector = mesa.DataCollector(
             model_reporters={
@@ -87,6 +93,7 @@ class ForestFire(mesa.Model):
         
         if rainy_season:
             self._initialize_clouds(cloud_quantity)   #TODO associar a biomas 
+        self._initialize_firemen(fireman_quantity)
 
         # Coleta os dados iniciais
         self.datacollector.collect(self)
@@ -123,6 +130,8 @@ class ForestFire(mesa.Model):
                 agent = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
                 if agent.pos in fire_list:   
                     agent.status = "Burning"
+                else:
+                    self.num_fine_trees += 1
                 
                 lakes_in_cell = self.get_cell_items([pos], [Lake])
                 if len(lakes_in_cell) == 0:
@@ -153,7 +162,7 @@ class ForestFire(mesa.Model):
         agent_type = random.choices(types, weights=weights_list)[0]
         match agent_type:
             case "Corridor":
-                self._initialize_corridor(pos)
+                self._initialize_corridor(pos, self.corridor_radius)
             case "Obstacle":
                 self._initialize_obstacle(pos)
             case "None":
@@ -204,8 +213,16 @@ class ForestFire(mesa.Model):
         self.schedule.add(obstacle)
         self.grid.place_agent(obstacle, pos)
     
-    def _initialize_corridor(self, pos):
-        corridor = Corridor(self.next_id(), self, pos)
+    def _initialize_corridor(self, pos, corridor_radius):
+        corridor = Corridor(self.next_id(), self, pos, corridor_radius)
+        if self.biome.humidity < 11:
+            burning_probability = 0.01
+            if random.random() < burning_probability:
+                size = self.biome.size.sort_value() # Tamanho da árvore conforme o bioma
+                color = self.biome.tree_color  # Cor do bioma para a árvore
+                img_path = self.biome.img_path # Diretório das imagens do bioma
+                corridor = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
+                corridor.status = "Burning"
         self.schedule.add(corridor)
         self.grid.place_agent(corridor, pos)
 
@@ -220,6 +237,48 @@ class ForestFire(mesa.Model):
             cloud = Cloud(self.next_id(), (x, y), self, size=cloud_size, color="gray", direction=direction, full=False, speed=self.wind_intensity)
             self.schedule.add(cloud)
             self.grid.place_agent(cloud, (x, y))
+    
+    def _initialize_firemen(self, fireman_quantity=0):
+        
+        """
+        Inicializa um número especificado de bombeiros em células aleatórias,
+        garantindo que estejam posicionados em células com Terra ou Árvore.
+        """
+        for i in range(fireman_quantity):
+            while True:  # Continua tentando até encontrar uma célula válida
+                x = self.random.randrange(self.grid.width)
+                y = self.random.randrange(self.grid.height)
+                pos = (x, y)
+                
+                # Verificar se a célula contém Terra ou Árvore
+                cell_contents = self.grid.get_cell_list_contents([pos])
+                if any(isinstance(agent, (Terra, Tree)) for agent in cell_contents):
+                    fireman = Fireman(unique_id=i, model=self, pos=pos)
+                    self.schedule.add(fireman)
+                    self.grid.place_agent(fireman, pos)
+                    break    
+            
+    def _random_fire(self):
+        '''
+        Inicia um foco de incêndio
+        '''
+        fire_list = [] 
+
+        g = self.random.randint(1, 8)
+        for _ in range(g):
+            fire_list.append((self.random.randint(0, self.width-1),
+                            self.random.randint(0, self.height-1)))
+        
+        for _contents, pos in self.grid.coord_iter():
+            size = self.biome.size.sort_value() # Tamanho da árvore conforme o bioma
+            color = self.biome.tree_color  # Cor do bioma para a árvore
+            img_path = self.biome.img_path # Diretório das imagens do bioma  
+            
+            agent = Tree(self.next_id(), self, pos, size, color, self.tree_density, img_path, self.reprod_speed)
+            if agent.pos in fire_list:
+                self.schedule.add(agent)
+                self.grid.place_agent(agent, pos)
+                agent.status = "Burning"
             
     def get_cell_items(self, positions: list, types: list):
         agents_in_cell = self.grid.get_cell_list_contents(positions)
@@ -236,16 +295,21 @@ class ForestFire(mesa.Model):
         Realiza um passo no modelo, atualizando os status das árvores.
         A cada passo, verifica as interações da árvore com a terra.
         """
-        for agent in self.schedule.agents:
-            if agent.status == "Burning":
-                self.propagate_fire(agent)
+        if self.wind_intensity != 0:
+            for agent in self.schedule.agents:
+                if agent.status == "Burning":
+                    self.propagate_fire(agent)
 
         self.schedule.step()  # Avança o passo do modelo
         self.datacollector.collect(self)  # Coleta dados após cada passo
         
-        if self.rainy_season and self.schedule.steps % self.cloud_step == 0:
-            self._initialize_clouds(self.clouds_per_step)  
-
+        # Adiciona novas nuvens com tamanhos variados a cada 10 passos
+        if self.rainy_season and self.schedule.steps % 10 == 0:
+            self._initialize_clouds(5)  # Adiciona 5 novas nuvens a cada 10 passos
+    
+        if self.biome.humidity < 11 and self.schedule.steps % 5 == 0:
+                self._random_fire()
+        
     def propagate_fire(self, agent):
         for neighbor in agent.model.grid.iter_neighbors(agent.pos, True):
             if neighbor.status == "Fine":
@@ -259,9 +323,12 @@ class ForestFire(mesa.Model):
                 if (dx, dy) == self._get_wind_vector():
                     if random.randint(0, 100) > beta:
                         neighbor.status = "Burning"
+                        self.num_fine_trees -= 1
                 else:
                     if random.randint(0, 100) > alpha:
                         neighbor.status = "Burning"
+                        self.num_fine_trees -= 1
+
         # Cálculo de CO2 emitido na queima da árvore
         agent.CO2_emission = agent.size * 20 * 0.5 * 3.67 # Biomassa x 0.5 x 3.67
         agent.status = "Burned"
@@ -279,7 +346,7 @@ class ForestFire(mesa.Model):
         if self.wind_direction == "W":
             return (-1, 0)  # Para a esquerda
         return (0, 0)
-
+    
     @staticmethod
     def count_type(model, status=None, agent_type=None):
         """

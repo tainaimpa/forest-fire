@@ -3,10 +3,11 @@ from forest_fire.model import ForestFire
 from forest_fire.tree import Tree, Terra
 from forest_fire.obstacles import Obstacle, Corridor, Puddle, Lake
 from forest_fire.cloud import Cloud
+from forest_fire.fireman import Fireman
 
 # Ajuste do tamanho do grid e da tela
-GRID_WIDTH = 75
-GRID_HEIGHT = 75
+GRID_WIDTH = 20
+GRID_HEIGHT = 20
 CANVAS_WIDTH = 750
 CANVAS_HEIGHT = 750
 
@@ -21,6 +22,7 @@ COLORS = {
     "Cloud": "#A0A0A0",
     "heavy cloud" : "#565b70"  ,
     "Terra": "#6B4423",
+    "Fireman": "#00A8FF" 
 }
 
 def agent_portrayal(agent):
@@ -37,8 +39,9 @@ def agent_portrayal(agent):
     x, y = agent.pos
     
     if isinstance(agent, Obstacle) or isinstance(agent, Corridor) or isinstance(agent, Puddle) or isinstance(agent, Lake):
+        shape = f"forest_fire/static/images/obstacles/{agent.status}.png" if agent.model.biome.code != 'default' else 'rect'
         return {
-            "Shape": "rect",
+            "Shape": shape,
             "w": 1,
             "h": 1,
             "Filled": True,
@@ -110,6 +113,17 @@ def agent_portrayal(agent):
                 "y": y,
                 "Color": COLORS["heavy cloud"] if agent.full else COLORS["Cloud"], 
             }
+    
+    if isinstance(agent, Fireman):
+        return {
+            "Shape": "circle",
+            "r": 0.5,                     
+            "Filled": True,         
+            "Layer": 1,
+            "x": x,
+            "y": y,  
+            "Color":COLORS["Fireman"],                                 
+        }
 
 canvas_element = mesa.visualization.CanvasGrid(lambda agent: agent_portrayal(agent), GRID_WIDTH, GRID_HEIGHT, CANVAS_WIDTH, CANVAS_HEIGHT)
 
@@ -137,10 +151,10 @@ model_params = {
     "biome_name": mesa.visualization.Choice("Biome", "Default", ["Default","Amazônia","Caatinga","Cerrado","Pantanal","Mata Atlântica"]), 
     "width": GRID_WIDTH,
     "height": GRID_HEIGHT,
-    "tree_density": mesa.visualization.Slider("Tree Density", 0.65, 0.01, 1.0, 0.01),
     "random_fire" : mesa.visualization.Checkbox("Random Fire Start", True),
     "position_fire": mesa.visualization.Choice("Fire Start Direction","Top", ["Top", "Bottom", "Left", "Right", "Middle"]),
     "tree_density": mesa.visualization.Slider("Tree Density", 0, 0, 1.0, 0.01, description="If the value is 0, the biome density will be used."),
+    "fireman_quantity": mesa.visualization.Slider("Fireman Quantity", 0, 0, 1000, 50),
     "cloud_quantity": mesa.visualization.Slider("Cloud Quantity", 0, 0, 30, 1, description="number of clouds initialized at start") ,
     "cloud_step": mesa.visualization.Slider("Clouds Step", 7, 1, 30, 1,description="number of steps until new clouds are initialized"),
     'clouds_per_step':mesa.visualization.Slider("Clouds per Step", 3, 0, 10, 1,description="number of clouds initialized during the simulation"),
@@ -151,10 +165,10 @@ model_params = {
     "corridor_density": mesa.visualization.Slider("Corridor Density", 0.15, 0, 1.0, 0.01), 
     "obstacles_density": mesa.visualization.Slider("Obstacles Density", 0.15, 0, 1.0, 0.01),
     "obstacles": mesa.visualization.Checkbox("Obstacles", True),
-    "obstacles": mesa.visualization.Checkbox("Corridor", True),
+    "corridor": mesa.visualization.Checkbox("Corridor", True),
     "individual_lakes": mesa.visualization.Checkbox("Individual Lakes", True),
     "wind_direction": mesa.visualization.Choice("Wind Direction", "N", ["N", "S", "E", "W"]),
-    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0.5, 0.0, 1.0, 0.1),
+    "wind_intensity": mesa.visualization.Slider("Wind Intensity", 0, 0.0, 1.0, 0.1),
 }
 
 server = mesa.visualization.ModularServer(

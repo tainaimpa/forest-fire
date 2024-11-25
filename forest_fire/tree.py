@@ -2,6 +2,7 @@ import mesa
 import random
 
 from forest_fire.obstacles import Lake, Corridor, Obstacle, Puddle
+from forest_fire.ground import Terra
 
 # Dicionário de cores para cada status da árvore
 COLORS = {
@@ -9,24 +10,6 @@ COLORS = {
     "Burning": "#FF0000",  # Cor para árvores queimando (vermelho)
     "Burned": "#3D2B1F",    # Cor para árvores queimadas (marrom escuro)
 }
-
-class Terra(mesa.Agent):
-    """
-    O agente terra preenche todo o grid.
-    Ele altera sua cor dependendo do status da árvore sobre ele.
-    """
-    def __init__(self, pos, model, color, img_path: str = None):
-        super().__init__(pos, model)
-        self.pos = pos
-        self.img_path = img_path
-        self.color = color  # Cor padrão da terra (terra nua)
-        self.status = "Terra"
-    
-    def get_image(self):
-        return f"{self.img_path}/terra.png"
-    
-    def step(self):
-        pass
                 
 class Tree(mesa.Agent):
     """
@@ -52,7 +35,9 @@ class Tree(mesa.Agent):
     
     def grow_tree(self, growable_agent):
         pos = growable_agent.pos
-        if not isinstance(growable_agent, Terra):
+        if isinstance(growable_agent, Tree):                
+            growable_agent.CO2_sequestered += growable_agent.size * 0.1  #  Sequestra 0.1kg de CO2 por unidade de tamanho
+        if not isinstance(growable_agent, Terra) and growable_agent.status != "Fireman":
             self.model.grid.remove_agent(growable_agent)
             self.model.schedule.remove(growable_agent)
         size = self.model.biome.size.sort_value()
@@ -60,42 +45,86 @@ class Tree(mesa.Agent):
         tree = Tree(self.model.next_id(), self.model, pos, size, color, self.model.tree_density, self.model.biome.img_path, self.model.reprod_speed)
         self.model.grid.place_agent(tree, pos)
         self.model.schedule.add(tree)
-    
-    def bfs(self,cord):
+        self.model.num_fine_trees += 1
+        
+    def search_neighbours(self, pos):
+        x, y = pos
+        first_level_directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        second_level_directions = [(-2, 0), (2, 0), (0, -2), (0, 2), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        
         n_first_level_neighbors = 0
         n_second_level_neighbors = 0
         n_first_level_trees = 0
         n_second_level_trees = 0
-        visited_cells = set()
         
-        for neighbor1 in self.model.grid.iter_neighbors(cord, True):
-            if neighbor1 not in visited_cells:
-                visited_cells.add(neighbor1)
+        for d1 in first_level_directions:
+            dx, dy = d1
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.model.width and 0 <= ny < self.model.height:
                 n_first_level_neighbors += 1
-                if neighbor1.status == 'Fine':
-                    visited_cells.add(neighbor1)
-                    n_first_level_trees += 1
-            for neighbor2 in self.model.grid.iter_neighbors(neighbor1.pos, True):
-                if neighbor2 not in visited_cells:
-                    visited_cells.add(neighbor2)
-                    n_second_level_neighbors += 1
-                    if neighbor2.status == 'Fine':
+                cell_agents = self.model.grid.get_cell_list_contents([(nx, ny)])
+                for agent in cell_agents:
+                    if isinstance(agent, Tree) and agent.status == 'Fine':
+                        n_first_level_trees += 1
+                        break # Só existe uma árvore por célula
+        
+        for d2 in second_level_directions:
+            dx, dy = d2
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.model.width and 0 <= ny < self.model.height:
+                n_second_level_neighbors += 1
+                cell_agents = self.model.grid.get_cell_list_contents([(nx, ny)])
+                for agent in cell_agents:
+                    if isinstance(agent, Tree) and agent.status == 'Fine':
                         n_second_level_trees += 1
+                        break # Só existe uma árvore por célula
+        
         return (n_first_level_neighbors, n_second_level_neighbors, n_first_level_trees, n_second_level_trees)
+    
+    def grow_neighbour_trees(self, pos, n1_reprod_rate, n2_reprod_rate):
+        x, y = pos
+        first_level_directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        second_level_directions = [(-2, 0), (2, 0), (0, -2), (0, 2), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        
+        for d1 in first_level_directions:
+            dx, dy = d1
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.model.width and 0 <= ny < self.model.height:
+                cell_agents = self.model.grid.get_cell_list_contents([(nx, ny)])
+                for agent in cell_agents:
+                    if random.uniform(0, 1) < n1_reprod_rate and self.can_grow(agent):
+                        self.grow_tree(agent)                
+                    # Transforma todas as árvores vizinhas queimadas em terra
+                    elif isinstance(agent, Tree) and agent.status == 'Burned':
+                        self.remove_burned_tree(agent)
+        
+        for d2 in second_level_directions:
+            dx, dy = d2
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.model.width and 0 <= ny < self.model.height:
+                cell_agents = self.model.grid.get_cell_list_contents([(nx, ny)])
+                for agent in cell_agents:
+                    if random.uniform(0, 1) < n2_reprod_rate and self.can_grow(agent):
+                        self.grow_tree(agent)
+                    # Transforma todas as árvores vizinhas queimadas em terra
+                    elif isinstance(agent, Tree) and agent.status == 'Burned':
+                        self.remove_burned_tree(agent)
+                        
 
     def can_grow(self, cord):
         obstacles_in_cell = self.model.get_cell_items([cord.pos], [Obstacle, Corridor, Puddle, Lake, Tree])
         no_obstacles = len(obstacles_in_cell) == 0 # Se não tem obstáculo, então só tem terra que pode crescer
         if (isinstance(cord, Tree) and cord.status == 'Burned') or no_obstacles:
-            n_first_level_neighbors, n_second_level_neighbors, n_first_level_trees, n_second_level_trees = self.bfs(cord.pos)
+            n_first_level_neighbors, n_second_level_neighbors, n_first_level_trees, n_second_level_trees = self.search_neighbours(cord.pos)
             # A escolha desse return se dá para tentar restringir as limitações de estarmos tratando com inteiros
-            return ((n_first_level_trees + n_second_level_trees) < (self.tree_density * (n_first_level_neighbors + n_second_level_neighbors) * 0.9))
+            return (n_first_level_trees < n_first_level_neighbors * self.tree_density) and (n_second_level_trees < n_second_level_neighbors * self.tree_density)
         return False
 
     def tree_reproduction(self):
         if self.status != 'Fine':
             return
-        n_first_level_neighbors, n_second_level_neighbors, n_first_level_trees, n_second_level_trees = self.bfs(self.pos)            
+
+        n_first_level_neighbors, n_second_level_neighbors, n_first_level_trees, n_second_level_trees = self.search_neighbours(self.pos)            
         n_trees = n_first_level_trees + n_second_level_trees
 
         # Cálculo da velocidade de reflorestamento
@@ -108,30 +137,7 @@ class Tree(mesa.Agent):
         n2_reproduction_rate = (
             expected_trees/(n_second_level_neighbors * neighbors_number))*self.reprod_speed
 
-        # Reprodução das árvores
-        visited_cells = set()
-        for neighbor1 in self.model.grid.iter_neighbors(self.pos, True):
-            if neighbor1 not in visited_cells:
-                visited_cells.add(neighbor1)
-            for neighbor2 in self.model.grid.iter_neighbors(neighbor1.pos, True):
-                if neighbor2 not in visited_cells:
-                    visited_cells.add(neighbor2)
-                    if random.uniform(0, 1) < n2_reproduction_rate and self.can_grow(neighbor2):
-                        self.grow_tree(neighbor2)
-                        # Sequestro e emissão de CO2
-                        if neighbor2 == Tree:
-                            neighbor2.CO_sequestered += neighbor1.size * 0.1  #  Sequestra 0.1kg de CO2 por unidade de tamanho
-                    # Transforma todas as árvores vizinhas queimadas em ground
-                    elif isinstance(neighbor2, Tree) and neighbor2.status == 'Burned':
-                        self.remove_burned_tree(neighbor2)
-            if random.uniform(0, 1) < n1_reproduction_rate and self.can_grow(neighbor1):
-                    self.grow_tree(neighbor1)
-                    # Sequestro e emissão de CO2
-                    if neighbor1 == Tree:
-                        neighbor1.CO_sequestered += neighbor1.size * 0.1  # Sequestra 0.1kg de CO2 por unidade de tamanho                
-            # Transforma todas as árvores vizinhas queimadas em ground
-            elif isinstance(neighbor1, Tree) and neighbor1.status == 'Burned':
-                self.remove_burned_tree(neighbor1)
+        self.grow_neighbour_trees(self.pos, n1_reproduction_rate, n2_reproduction_rate)
 
     def step(self):
         """
@@ -146,11 +152,14 @@ class Tree(mesa.Agent):
             for neighbor in self.model.grid.iter_neighbors(self.pos, moore=True):
                 if neighbor.status == "Fine" and neighbor.burnable:
                     neighbor.status = "Burning"
+                    self.model.num_fine_trees -= 1
                 elif neighbor.status == "Corridor" and neighbor.burnable:
                     neighbor.status = "Burned"
-                    for neighbor_c in self.model.grid.iter_neighbors(neighbor.pos, moore=True):
+                    for neighbor_c in self.model.grid.iter_neighbors(neighbor.pos, moore=True, radius=neighbor.radius):
                         if neighbor_c.status == "Fine" and neighbor_c.burnable:                          
                             neighbor_c.status = "Burning"
+                            self.model.num_fine_trees -= 1
+        
              # Cálculo de CO2 emitido na queima da árvore
             self.CO2_emission = self.size * 20 * 0.5 * 3.67 # Biomassa x 0.5 x 3.67
             self.status = "Burned"
