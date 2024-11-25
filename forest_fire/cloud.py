@@ -77,7 +77,7 @@ class Cloud(SmoothWalker):
     def rain(self):
         """Simula a chuva."""
         x, y = self.pos
-        range_ = self.size + 3
+        range_ = self.size + 2
         for dx in range(-range_, range_ + 1):
             for dy in range(-range_, range_ + 1):
                 nx, ny = x + dx, y + dy
@@ -94,6 +94,7 @@ class Cloud(SmoothWalker):
             for neighbor in self.model.grid.get_neighbors(self.pos, moore=True):
                 if isinstance(neighbor, Cloud):
                     self.size += neighbor.size
+                    self.full = self.size > 5
                     self.model.grid.remove_agent(neighbor)  
                     self.model.schedule.remove(neighbor)
                     
